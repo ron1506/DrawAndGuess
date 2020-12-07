@@ -5,7 +5,6 @@ import PIL
 from PIL import Image, ImageDraw
 
 
-
 def paint(event):
     """
 
