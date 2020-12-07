@@ -1,3 +1,8 @@
+"""
+Made by: Ron Aizen
+7th, December 2020
+client with threads
+"""
 #############################################################################
 # Client - that connect to the multi-threading server
 ############################################################################
