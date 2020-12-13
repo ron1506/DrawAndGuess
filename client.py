@@ -24,6 +24,10 @@ class Client (object):
         self.pixels = np.full((500, 500, 3), 255)
 
     def start(self):
+        """
+        connecting to server
+        :return:
+        """
         try:
             print('connecting to ip %s port %s' % (ip, port))
             # Create a TCP/IP socket
@@ -41,6 +45,12 @@ class Client (object):
             print(e)
 
     def handleServerJob(self, serverSocket):
+        """
+        deals with the server job.
+        sending info, and receiveing.
+        :param serverSocket:
+        :return:
+        """
         while True:
 
             x = input("print something")

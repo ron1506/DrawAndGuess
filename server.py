@@ -50,6 +50,12 @@ class Server(object):
             print(e)
 
     def handleClient(self, clientSock, current):
+        """
+        method that helps the server deal with what the clint sends him.
+        :param clientSock:
+        :param current:
+        :return:
+        """
         print("hello")
         client_handler = threading.Thread(target=self.handle_client_connection, args=(clientSock, current,))
         # without comma you'd get a... TypeError: handle_client_connection()

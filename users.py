@@ -2,7 +2,8 @@ import sqlite3
 
 
 class Users:
-    """Creates database with users table includes:
+    """
+        Creates database with users table includes:
        create query
        insert query
        select query
