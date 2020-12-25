@@ -33,31 +33,31 @@ class Server(object):
            while True:
                 print('waiting for a new client')
                 # block
-                clientSocket, client_address = sock.accept()
+                client_socket, client_address = sock.accept()
 
                 print('new client entered')
 
                 # send receive example
-                clientSocket.sendall('Hello this is server'.encode())
-                msg = clientSocket.recv(1024).decode()
+                client_socket.sendall('Hello this is server'.encode())
+                msg = client_socket.recv(1024).decode()
                 print('received message: %s' % msg)
 
                 self.count += 1
                 print(self.count)
                 # implement here your main logic
-                self.handleClient(clientSocket, self.count)
+                self.handle_client(client_socket, self.count)
         except socket.error as e:
             print(e)
 
-    def handleClient(self, clientSock, current):
+    def handle_client(self, client_sock, current):
         """
         method that helps the server deal with what the clint sends him.
-        :param clientSock:
+        :param client_sock:
         :param current:
         :return:
         """
         print("hello")
-        client_handler = threading.Thread(target=self.handle_client_connection, args=(clientSock, current,))
+        client_handler = threading.Thread(target=self.handle_client_connection, args=(client_sock, current,))
         # without comma you'd get a... TypeError: handle_client_connection()
         # argument after * must be a sequence, not _socketobject
         client_handler.start()
@@ -71,6 +71,7 @@ class Server(object):
                 client_socket.send(str(random.randint(0, 100)).encode())
             elif request.upper() == "TIME":
                 client_socket.send(str(datetime.datetime.now().time()).encode())
+
             elif request.upper() == "DATE":
                 client_socket.send(str(datetime.datetime.now().date()).encode())
             else:
