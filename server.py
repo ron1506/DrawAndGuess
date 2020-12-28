@@ -17,7 +17,6 @@ class Server(object):
         """
         self.ip = ip
         self.port = port
-        self.count = 0
 
     def start(self):
         """
@@ -28,28 +27,17 @@ class Server(object):
            print('server starts up on ip %s port %s' % (self.ip, self.port))
            # Create a TCP/IP socket
            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-           sock.bind((self.ip, self.port))
+           sock.bind((self.ip, self.port))  # connecting to client
            sock.listen(3)
            while True:
                 print('waiting for a new client')
-                # block
                 client_socket, client_address = sock.accept()
-
                 print('new client entered')
-
-                # send receive example
-                client_socket.sendall('Hello this is server'.encode())
-                msg = client_socket.recv(1024).decode()
-                print('received message: %s' % msg)
-
-                self.count += 1
-                print(self.count)
-                # implement here your main logic
-                self.handle_client(client_socket, self.count)
+                self.handle_client(client_socket)
         except socket.error as e:
             print(e)
 
-    def handle_client(self, client_sock, current):
+    def handle_client(self, client_sock):
         """
         method that helps the server deal with what the clint sends him.
         :param client_sock:
@@ -57,26 +45,18 @@ class Server(object):
         :return:
         """
         print("hello")
-        client_handler = threading.Thread(target=self.handle_client_connection, args=(client_sock, current,))
+        client_handler = threading.Thread(target=self.handle_client_connection, args=(client_sock,))
         # without comma you'd get a... TypeError: handle_client_connection()
         # argument after * must be a sequence, not _socketobject
         client_handler.start()
 
     @staticmethod
-    def handle_client_connection(client_socket, current):
+    def handle_client_connection(client_socket):
          while True:
-            print("start")
             request = client_socket.recv(1024).decode()
-            if request.upper() == "RND":
-                client_socket.send(str(random.randint(0, 100)).encode())
-            elif request.upper() == "TIME":
-                client_socket.send(str(datetime.datetime.now().time()).encode())
-
-            elif request.upper() == "DATE":
-                client_socket.send(str(datetime.datetime.now().date()).encode())
-            else:
-                client_socket.sendall(request.encode())
-            print('Received {}'.format(request))
+            x, y = request.split(" ")
+            x = int(x)
+            y = int(y)
 
 
 if __name__ == '__main__':
