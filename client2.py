@@ -1,43 +1,40 @@
+"""
+Made by: Ron Aizen
+7th, December 2020
+client with threads
+"""
 #############################################################################
 # Client - that connect to the multi-threading server
 ############################################################################
 import socket
+from typing import List
+from tkinter import *
+import numpy as np
+from screen import Screen
 
 
 class Client (object):
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
+        self.start()
 
     def start(self):
+        """
+        connecting to server.
+        :return:
+        """
         try:
-            print('connecting to ip %s port %s' % (ip, port))
             # Create a TCP/IP socket
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((ip, port))
+            sock.connect((ip, port))  # connecting to server
             print('connected to server')
-            # send receive example
-            msg = sock.recv(1024).decode()
-            print('received message: %s' % msg)
-            sock.sendall('Hello this is client'.encode())
-            #implement here your main logic
-            while True:
-                self.handleServerJob(sock)
+            Screen(sock)
         except socket.error as e:
             print(e)
-
-    def handleServerJob(self, serverSocket):
-        while True:
-            x = input("print someting")
-            serverSocket.send(x.encode())
-            m = serverSocket.recv(1024).decode()
-            print(m)
-            if m == 'finish':
-                return 'finish'
 
 
 if __name__ == '__main__':
     ip = '127.0.0.1'
     port = 1730
     c = Client(ip, port)
-    c.start()

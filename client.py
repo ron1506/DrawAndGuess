@@ -12,6 +12,7 @@ from tkinter import *
 import numpy as np
 from screen import Screen
 
+
 class Client (object):
     def __init__(self, ip, port):
         self.ip = ip
@@ -31,6 +32,7 @@ class Client (object):
             Screen(sock)
         except socket.error as e:
             print(e)
+
 
 if __name__ == '__main__':
     ip = '127.0.0.1'

@@ -17,6 +17,7 @@ class Server(object):
         """
         self.ip = ip
         self.port = port
+        self.list_all_clients = []
 
     def start(self):
         """
@@ -24,20 +25,21 @@ class Server(object):
         :return:
         """
         try:
-           print('server starts up on ip %s port %s' % (self.ip, self.port))
-           # Create a TCP/IP socket
-           sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-           sock.bind((self.ip, self.port))  # connecting to client
-           sock.listen(3)
-           while True:
+            print('server starts up on ip %s port %s' % (self.ip, self.port))
+            # Create a TCP/IP socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((self.ip, self.port))  # connecting to client
+            sock.listen(3)
+            while True:
                 print('waiting for a new client')
                 client_socket, client_address = sock.accept()
+                self.list_all_clients.append([client_socket, client_address])
                 print('new client entered')
-                self.handle_client(client_socket)
+                self.handle_client(client_socket, client_address)
         except socket.error as e:
             print(e)
 
-    def handle_client(self, client_sock):
+    def handle_client(self, client_sock, client_address):
         """
         method that helps the server deal with what the clint sends him.
         :param client_sock:
@@ -45,18 +47,21 @@ class Server(object):
         :return:
         """
         print("hello")
-        client_handler = threading.Thread(target=self.handle_client_connection, args=(client_sock,))
+        client_handler = threading.Thread(target=self.handle_client_connection, args=(client_sock, client_address))
         # without comma you'd get a... TypeError: handle_client_connection()
         # argument after * must be a sequence, not _socketobject
         client_handler.start()
 
-    @staticmethod
-    def handle_client_connection(client_socket):
+    def handle_client_connection(self, client_socket, client_address):
          while True:
-            request = client_socket.recv(1024).decode()
-            x, y = request.split(" ")
-            x = int(x)
-            y = int(y)
+            try:
+                request = client_socket.recv(1024)  # getting the coordinates from the client,
+                print(self.list_all_clients)
+                print(len(self.list_all_clients))
+                for i in range(len(self.list_all_clients)):
+                    self.list_all_clients[i][0].send(request)
+            except Exception as e:
+                print(e)
 
 
 if __name__ == '__main__':
