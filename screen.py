@@ -1,71 +1,58 @@
 
 from tkinter import *
-# by Canvas I can't save image, so i use PIL
-import PIL
 import threading
-from PIL import Image, ImageDraw
 
 
 class Screen:
     def __init__(self, socket):
         self.root = Tk()
         self.cv = Canvas(self.root, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
-        self.x = 0
-        self.y = 0
+        self.x = 0  # initializing coordinates.
+        self.y = 0  # initializing coordinates.
         self.server_socket = socket
-        self.main()
+        self.main()  # calling the main function.
 
     def main(self):
-        # if left button on the mouse is being clicked, it goes to the function 'paint'.
+        """
+        if the user clicks the left button, the coordinates he pressed are being send to the server.
+        :return: nothing.
+        """
+        # if left button on the mouse is being clicked, it goes to the function 'send_coordinates '.
         self.cv.bind('<B1-Motion>', self.send_coordinates)
         self.cv.pack(expand=YES, fill=BOTH)
-        server_handler = threading.Thread(target=self.paint1)
+        server_handler = threading.Thread(target=self.paint)
+        # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
         self.root.mainloop()
 
     def send_coordinates(self, event):
         """
-
-        :param event:
+        the function sending the coordinates, of the mouse when clicked on the board to the server.
+        :param event: when clicking the left button an event is created contains the coordinates of the place.
         :return:
         """
         self.x, self.y = event.x, event.y
         x_and_y = str(self.x) + " " + str(self.y)
-        print(x_and_y)
-        self.server_socket.send(x_and_y.encode())
+        # print(x_and_y)
+        self.server_socket.send(x_and_y.encode())  # sending the server the coordinates.
 
-    # def paint(self, event):
-    #     """
-    #
-    #     :param event: contains the mouse x and y coordinates.
-    #     :return: painting the screen in black in the requested coordinates.
-    #     """
-    #     self.x, self.y = event.x, event.y
-    #     x2, y2 = (event.x + 1), (event.y + 1)
-    #     self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
-    #     #  --- PIL
-    #     # draw.line((self.x, self.y, x2, y2), fill='black', width=10)
-    #     print("mouse position: (%s %s)" % (event.x, event.y))
-    #     x_and_y = str(self.x) + " " + str(self.y)
-    #     self.server_socket.send(x_and_y.encode())
-
-    def paint1(self):
+    def paint(self):
         """
-
-        :return: painting the screen in black in the requested coordinates.
+        receiving coordinates from server and painting the screen in black in them.
+        :return:
         """
         while True:
-            x_and_y = self.server_socket.recv(1024).decode()
+            x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
             pos = x_and_y.split(" ")  # separating x and y
             x = int(pos[0])
             y = int(pos[1])
-            print(x, y)
+            # print(x, y)
             self.x, self.y = x, y
             x2, y2 = (x + 1), (y + 1)
             self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
-            print("other mouse position: (%s %s)" % (x, y))
-            #  --- PIL
-            # draw.line((self.x, self.y, x2, y2), fill='black', width=10)
+            # painting the screen in the coordinates.
+            # print("other mouse position: (%s %s)" % (x, y))
+
 
 
 

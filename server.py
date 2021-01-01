@@ -3,25 +3,23 @@
 ############################################################################
 import socket
 import threading
-import random
-import datetime
 
 
 class Server(object):
 
     def __init__(self, ip, port):
         """
-        constructor
+        constructor. initializing variables of the class.
         :param ip:
         :param port:
         """
         self.ip = ip
         self.port = port
-        self.list_all_clients = []
+        self.list_all_clients = []  # creating a list with all client's info.
 
     def start(self):
         """
-        building the socket, communicating with the client
+        building the socket, communicating with the client, the main function.
         :return:
         """
         try:
@@ -53,7 +51,13 @@ class Server(object):
         client_handler.start()
 
     def handle_client_connection(self, client_socket, client_address):
-         while True:
+        """
+
+        :param client_socket:
+        :param client_address:
+        :return:
+        """
+        while True:
             try:
                 request = client_socket.recv(1024)  # getting the coordinates from the client,
                 print(self.list_all_clients)
@@ -65,7 +69,7 @@ class Server(object):
 
 
 if __name__ == '__main__':
-   ip = '0.0.0.0'
-   port = 1730
-   s = Server(ip, port)
-   s.start()
+    ip = '0.0.0.0'
+    port = 1730
+    s = Server(ip, port)
+    s.start()

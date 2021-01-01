@@ -7,29 +7,31 @@ client with threads
 # Client - that connect to the multi-threading server
 ############################################################################
 import socket
-from typing import List
-from tkinter import *
-import numpy as np
 from screen import Screen
 
 
 class Client (object):
     def __init__(self, ip, port):
+        """
+        constructor. initializing variables of the class.
+        :param ip:
+        :param port:
+        """
         self.ip = ip
         self.port = port
         self.start()
 
     def start(self):
         """
-        connecting to server.
+        building the socket, connecting to server, the main function.
         :return:
         """
         try:
             # Create a TCP/IP socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # creating the socket
             sock.connect((ip, port))  # connecting to server
-            print('connected to server')
-            Screen(sock)
+            print('connected to server')  # to see if client connected successfully.
+            Screen(sock)  # creating a new screen.
         except socket.error as e:
             print(e)
 
