@@ -13,6 +13,7 @@ import tkinter as tk
 class Surface:
     def __init__(self):
         self.root = tk.Tk()
+        self.open_screen()
 
     def open_screen(self):
         """
@@ -34,21 +35,21 @@ class Surface:
                 font=('cooper black', 15), fg="black")  # registration text
         registration_text.place(x=210, y=435)
 
-        registration_button = tk.Label(self.root, text="Press here to register", relief="solid",
-                font=('cooper black', 22), fg="white", bg="#%02x%02x%02x" % (60, 53, 53))  # registration button
+        registration_button = tk.Button(self.root, text="Press here to register", relief="solid",
+                font=('cooper black', 22), fg="white", bg="#%02x%02x%02x" % (60, 53, 53), command=self.register_screen)  # registration button
         registration_button.place(x=115, y=485)
 
         log_in_text = tk.Label(self.root, text="Already Logged In?",
                 font=('cooper black', 15), fg="black", bg=None)  # log in text
         log_in_text.place(x=610, y=435)
 
-        log_in_button = tk.Label(self.root, text="Press here to Log In", relief="solid",
-                font=('cooper black', 22), fg="white", bg="#%02x%02x%02x" % (60, 53, 53))  # log in button
+        log_in_button = tk.Button(self.root, text="Press here to Log In", relief="solid",
+                font=('cooper black', 22), fg="white", bg="#%02x%02x%02x" % (60, 53, 53), command=self.login_screen)  # log in button
         log_in_button.place(x=565, y=485)
 
         info_img = tk.PhotoImage(file='question-mark.png')
-        info_button = tk.Label(self.root, image=info_img, bg="#%02x%02x%02x" % (255, 255, 255),  # creating info button
-                               fg="black")
+        info_button = tk.Button(self.root, image=info_img, bg="#%02x%02x%02x" % (255, 255, 255),  # creating info button
+                               fg="black", command= self.info_screen)
         info_button.place(x=850, y=50)
 
         tk.mainloop()  # last line
@@ -88,12 +89,12 @@ class Surface:
         self.root.geometry("751x650+100+30")  # size: 751x650, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Info Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
-        tk_rgb = "#%02x%02x%02x" % (255, 148, 7)  # picking background color.
+        tk_rgb = "#%02x%02x%02x" % (255, 165, 0)  # picking background color.
         self.root["background"] = tk_rgb  # applying the background color on the screen
 
         """info_bg = tk.PhotoImage(file='how-it-works-1.png')
         info_sc = tk.Label(self.root, image=info_bg)  # creating home screen
-        info_sc.place(x=0, y=0)"""
+        info_sc.place(x=100, y=30)"""
 
         info_headline = tk.Label(text='HOW TO PLAY?!', font=('bubble', 20), bg='orange', fg="black", relief="solid")
         info_headline.place(x=270, y=5)
@@ -103,8 +104,8 @@ class Surface:
         info_text.place(x=0, y=50)
 
         home_button_img = tk.PhotoImage(file='home-icon.png')
-        home_sc_button = tk.Label(self.root, image=home_button_img, relief="solid",
-                                  bg="#%02x%02x%02x" % (255, 255, 255))  # creating home screen
+        home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
+                                  bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen
         home_sc_button.place(x=20, y=20)
 
         dice_img = tk.PhotoImage(file='dice-icon.png')  # adding decorations, dice photo
@@ -139,21 +140,21 @@ class Surface:
         login_headline.place(x=190, y=120)  # positioning the title of the screen.
 
         home_button_img = tk.PhotoImage(file='home-icon.png')
-        home_sc_button = tk.Label(self.root, image=home_button_img, relief="solid",
-                                  bg="#%02x%02x%02x" % (255, 255, 255))  # creating home screen
+        home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
+                                  bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen
         home_sc_button.place(x=20, y=20)
 
         username_button = tk.Label(relief='raise', text='Username: ', font=('bubble', 28), bg='orange', fg="black")
         username_button.place(x=150, y=380)
 
-        username_blank_space = tk.Label(relief='solid', text="                       ", font=('bubble', 28)
+        username_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
         username_blank_space.place(x=400, y=380)
 
         password_button = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
         password_button.place(x=150, y=480)
 
-        password_blank_space = tk.Label(relief='solid', text="                       ", font=('bubble', 28)
+        password_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
         password_blank_space.place(x=400, y=480)
 
@@ -183,35 +184,34 @@ class Surface:
         registration_headline.place(x=200, y=30)  # positioning the title of the screen.
 
         home_button_img = tk.PhotoImage(file='home-icon.png')
-        home_sc_button = tk.Label(self.root, image=home_button_img, relief="solid",
-                                  bg="#%02x%02x%02x" % (255, 255, 255))  # creating home screen
+        home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
+                        bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen
         home_sc_button.place(x=20, y=20)
 
         email_button = tk.Label(relief='raise', text="Email: ", font=('bubble', 28), bg='orange', fg="black")
         email_button.place(x=270, y=150)
 
-        email_blank_space = tk.Label(relief='solid', text="                       ", font=('bubble', 28)
-                                        , bg='orange', fg="black")
+        email_blank_space = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
         email_blank_space.place(x=400, y=150)
 
         username_button = tk.Label(relief='raise', text="User's Name: ", font=('bubble', 28), bg='orange', fg="black")
         username_button.place(x=150, y=250)
 
-        username_blank_space = tk.Label(relief='solid', text="                       ", font=('bubble', 28)
+        username_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
         username_blank_space.place(x=400, y=250)
 
         password_button = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
         password_button.place(x=200, y=350)
 
-        password_blank_space = tk.Label(relief='solid', text="                       ", font=('bubble', 28)
+        password_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
         password_blank_space.place(x=400, y=350)
 
         password_button = tk.Label(relief='raise', text='Confirm Password: ', font=('bubble', 28), bg='orange', fg="black")
         password_button.place(x=60, y=450)
 
-        password_blank_space = tk.Label(relief='solid', text="                       ", font=('bubble', 28)
+        password_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
         password_blank_space.place(x=400, y=450)
 
@@ -232,11 +232,6 @@ class Surface:
 
 def main():
     s = Surface()
-    s.open_screen()
-    s.draw_on_board()
-    s.info_screen()
-    s.login_screen()
-    s.register_screen()
 
 
 if __name__ == '__main__':
