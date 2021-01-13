@@ -4,19 +4,21 @@ import threading
 
 
 class Screen:
-    def __init__(self, socket):
+    def __init__(self, socket, username):
         self.root = Tk()
-        self.cv = Canvas(self.root, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
+        self.cv = Canvas(self.root, width=700, height=700, bg='white')  # creating a blank white canvas, size: 500x500.
         self.x = 0  # initializing coordinates.
         self.y = 0  # initializing coordinates.
         self.server_socket = socket
-        self.main()  # calling the main function.
+        self.main(username)  # calling the main function.
 
-    def main(self):
+    def main(self, username):
         """
         if the user clicks the left button, the coordinates he pressed are being send to the server.
         :return: nothing.
         """
+        headline = Label(self.root, text=username)
+        headline.pack()
         # if left button on the mouse is being clicked, it goes to the function 'send_coordinates '.
         self.cv.bind('<B1-Motion>', self.send_coordinates)
         self.cv.pack(expand=YES, fill=BOTH)

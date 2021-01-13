@@ -3,17 +3,37 @@ Name: Ron Aizen
 Date: November 6 2020
 PyGame Multiplayer Drawing and guessing game Project 1.0
 """
+import socket
 import tkinter as tk
-
-
+from tkinter import messagebox
+from screen import Screen
 # hello its jasmin taking over ur computer maybe u will notice maybe not ar shall i say perhaps? good luck with
-# # your psychometry
+# your psychometry
 
 
 class Surface:
-    def __init__(self):
+    def __init__(self, ip, port):
+        """
+        constructor. initializing variables of the class.
+        building the socket, connecting to server, the main function.
+        :param ip:
+        :param port:
+        """
+        self.ip = ip
+        self.port = port
         self.root = tk.Tk()
-        self.open_screen()
+        self.username = ""
+        self.password = ""
+        self.confirm_password = ""
+        self.email_address = ""
+        try:
+            # Create a TCP/IP socket
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # creating the socket
+            self.sock.connect((self.ip, self.port))  # connecting to server
+            print('connected to server')  # to see if client connected successfully.
+            self.open_screen()
+        except socket.error as e:
+            print(e)
 
     def open_screen(self):
         """
@@ -48,27 +68,11 @@ class Surface:
         log_in_button.place(x=565, y=485)
 
         info_img = tk.PhotoImage(file='question-mark.png')
-        info_button = tk.Button(self.root, image=info_img, bg="#%02x%02x%02x" % (255, 255, 255),  # creating info button
+        info_button = tk.Button(self.root, image=info_img, bg="#%02x%02x%02x" % (255, 165, 0),  # creating info button
                                fg="black", command= self.info_screen)
         info_button.place(x=850, y=50)
 
         tk.mainloop()  # last line
-
-    def quit_screen(self):
-        """
-
-        :return:
-        """
-        pass
-
-    def home_button(self):
-        pass
-
-    def return_button(self):
-        pass
-
-    def info_button(self):
-        pass
 
     def info_screen(self):
         """
@@ -86,7 +90,7 @@ class Surface:
                     He must express the word by drawing it on\n
                     the board while the other participants must guess \n
                     the word by writing it in the chat."""
-        self.root.geometry("751x650+100+30")  # size: 751x650, Location: (100, 30)
+        self.root.geometry("650x650+100+30")  # size: 751x650, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Info Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
         tk_rgb = "#%02x%02x%02x" % (255, 165, 0)  # picking background color.
@@ -105,18 +109,15 @@ class Surface:
 
         home_button_img = tk.PhotoImage(file='home-icon.png')
         home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
-                                  bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen
+                                bg='orange', command=self.open_screen)  # creating home screen
         home_sc_button.place(x=20, y=20)
 
         dice_img = tk.PhotoImage(file='dice-icon.png')  # adding decorations, dice photo
         dice_button = tk.Label(self.root, image=dice_img, relief="solid",
-                               bg="#%02x%02x%02x" % (255, 255, 255))  # creating dice image
-        dice_button.place(x=650, y=560)
+                               bg="#%02x%02x%02x" % (255, 165, 0))  # creating dice image
+        dice_button.place(x=50, y=560)
 
         tk.mainloop()  # last line.
-
-    def login_button(self):
-        pass
 
     def login_screen(self):
         """
@@ -141,27 +142,37 @@ class Surface:
 
         home_button_img = tk.PhotoImage(file='home-icon.png')
         home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
-                                  bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen
+                                  bg="#%02x%02x%02x" % (255, 165, 0), command=self.open_screen)  # creating home screen
         home_sc_button.place(x=20, y=20)
 
-        username_button = tk.Label(relief='raise', text='Username: ', font=('bubble', 28), bg='orange', fg="black")
-        username_button.place(x=150, y=380)
+        username_label = tk.Label(relief='raise', text='Username: ', font=('bubble', 28), bg='orange', fg="black")
+        username_label.place(x=150, y=380)
 
-        username_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
-                                        , bg='orange', fg="black")
-        username_blank_space.place(x=400, y=380)
+        username = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
+        username.place(x=400, y=380)
 
-        password_button = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
-        password_button.place(x=150, y=480)
+        password_label = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
+        password_label.place(x=150, y=480)
 
-        password_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
-                                        , bg='orange', fg="black")
-        password_blank_space.place(x=400, y=480)
+        password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
+        password.place(x=400, y=480)
 
+        arrow_img = tk.PhotoImage(file='arrow.png')
+        continue_button = tk.Button(self.root, image=arrow_img, relief="solid",
+                        bg="#%02x%02x%02x" % (255, 255, 255), command=lambda: self.submit_log_in(username, password))  # creating arrow button
+        continue_button.place(x=800, y=500)
         tk.mainloop()  # last line.
 
-    def register_button(self):
-        pass
+    def submit_log_in(self, username, password):
+        self.username = username.get()
+        self.password = password.get()
+        msg = "login " + self.username + " " + self.password
+        self.sock.send(msg.encode())
+        if self.sock.recv(1024).decode() == 'doesntexist':
+            messagebox.showinfo(title="Log in failed.", message="username or password are wrong.")
+            self.login_screen()
+        else:
+            self.play_screen()
 
     def register_screen(self):
         """
@@ -185,53 +196,64 @@ class Surface:
 
         home_button_img = tk.PhotoImage(file='home-icon.png')
         home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
-                        bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen
+                        bg="#%02x%02x%02x" % (255, 255, 255), command=self.open_screen)  # creating home screen button
         home_sc_button.place(x=20, y=20)
 
         email_button = tk.Label(relief='raise', text="Email: ", font=('bubble', 28), bg='orange', fg="black")
         email_button.place(x=270, y=150)
 
-        email_blank_space = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
-        email_blank_space.place(x=400, y=150)
+        email_adress = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
+        email_adress.place(x=400, y=150)
 
         username_button = tk.Label(relief='raise', text="User's Name: ", font=('bubble', 28), bg='orange', fg="black")
         username_button.place(x=150, y=250)
 
-        username_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
+        username = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
-        username_blank_space.place(x=400, y=250)
+        username.place(x=400, y=250)
 
         password_button = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
         password_button.place(x=200, y=350)
 
-        password_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
+        password = tk.Entry(relief='solid', font=('bubble', 20)
                                         , bg='orange', fg="black")
-        password_blank_space.place(x=400, y=350)
+        password.place(x=400, y=350)
 
-        password_button = tk.Label(relief='raise', text='Confirm Password: ', font=('bubble', 28), bg='orange', fg="black")
-        password_button.place(x=60, y=450)
+        confirm_password_button = tk.Label(relief='raise', text='Confirm Password: ', font=('bubble', 28), bg='orange', fg="black")
+        confirm_password_button.place(x=60, y=450)
 
-        password_blank_space = tk.Entry(relief='solid', font=('bubble', 20)
-                                        , bg='orange', fg="black")
-        password_blank_space.place(x=400, y=450)
+        confirm_password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
+        confirm_password.place(x=400, y=450)
 
+        arrow_img = tk.PhotoImage(file='arrow.png')
+        # creating arrow button
+        continue_button = tk.Button(self.root, image=arrow_img, relief="solid",
+                        bg="#%02x%02x%02x" % (255, 255, 255), command=lambda: self.submit_register(username, password, confirm_password, email_adress))
+        continue_button.place(x=800, y=500)
         tk.mainloop()  # last line.
 
-    def draw_on_board(self):
-        pass
+    def submit_register(self, username, password, confirm_password, email_adress):
+        self.username = username.get()
+        self.password = password.get()
+        self.confirm_password = confirm_password.get()
+        self.email = email_adress.get()
+        if self.password != self.confirm_password:
+            messagebox.showinfo(title=" password not identical.", message="the password confirm should be exactly like the password")
+            self.register_screen()
+        if ('@' not in self.email_address) or ('.com' not in self.email_address):
+            messagebox.showinfo(title="Invalid Email address", message="Must contain '@' and '.com'")
+            self.register_screen()
+        msg = "register " + self.username + " " + self.password + " " + self.email
+        self.sock.send(msg.encode())
 
-    def enter_game_button(self):
-        pass
-
-    def write_text(self, text, pos):
-        pass
-
-    def check_where_pressed(self):
-        pass
+    def play_screen(self):
+        s = Screen(self.sock, self.username)
 
 
 def main():
-    s = Surface()
+    ip = '127.0.0.1'
+    port = 1730
+    s = Surface(ip, port)
 
 
 if __name__ == '__main__':

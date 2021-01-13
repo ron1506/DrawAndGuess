@@ -60,6 +60,10 @@ class Server(object):
         while True:
             try:
                 request = client_socket.recv(1024)  # getting the coordinates from the client,
+                if 'login' in request:
+                    pass  # לבדוק אם משתמש קיים וסיסמה תקינה
+                if 'register' in request:
+                    pass  # לבדוק אם משתמש קיים וסיסמה תקינה
                 print(self.list_all_clients)
                 print(len(self.list_all_clients))
                 for i in range(len(self.list_all_clients)):

@@ -43,6 +43,9 @@ class Users:
         conn.close()
         print("Record created successfully")
 
+    def is_exist(self, new_username):
+        pass
+
     @staticmethod
     def select_user_by_id():
         conn = sqlite3.connect('test.db')

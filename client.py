@@ -8,6 +8,7 @@ client with threads
 ############################################################################
 import socket
 from screen import Screen
+from surface import Surface
 
 
 class Client (object):
@@ -31,7 +32,8 @@ class Client (object):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # creating the socket
             sock.connect((ip, port))  # connecting to server
             print('connected to server')  # to see if client connected successfully.
-            Screen(sock)  # creating a new screen.
+            s = Surface(sock)
+            Screen(sock, s.username)  # creating a new screen.
         except socket.error as e:
             print(e)
 
