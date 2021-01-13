@@ -1,0 +1,71 @@
+"Draw And Guess" 
+Ron Aizen
+13th December
+
+surface.py:
+
+the class is mainly responsible of the game's GUI.
+מכיל את המסכים השונים במשחק.
+עדיין לא גמור...
+class Surface:
+	def open_screen(self):
+        """
+        creating the main window, the first window that the user sees.
+        :return:
+        """
+
+    def info_screen(self):
+        """
+        creating the screen that will open after pressing the info button, with directions how to play.
+        :return: nothing.
+        """
+
+    def login_screen(self):
+        """
+        creating the screen that will open after pressing the log in button, with option to log in to the game.
+        :return:
+        """
+
+    def register_screen(self):
+        """
+        creating the screen that will open after pressing the log in button, with option to log in to the game.
+        :return:
+        """
+
+
+
+server.py:
+יוצר את השרת שאחראי לתקשורת בין כל הלקוחות במשחק.
+קובץ לא גמור...
+class Server:
+creating a server by using socket, and threads.
+
+
+    def start(self):
+        """
+        building the socket, communicating with the client
+        :return:
+        """
+
+    def handleClient(self, clientSock, current):
+        """
+        method that helps the server deal with what the clint sends him.
+        :param clientSock: 
+        :param current: 
+        :return: 
+        """
+
+client.py:
+יוצר את הלקוח במשחק ממנו מתחברים למשחק כמשתמש.
+קובץ לא גמור...
+
+creating client by using sockets and threads.
+class Client:
+
+    def handleServerJob(self, serverSocket):
+        """
+        deals with the server job.
+        sending info, and receiveing.
+        :param serverSocket:
+        :return:
+        """
