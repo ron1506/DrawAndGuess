@@ -4,22 +4,22 @@ import sqlite3
 class Users:
     """
         Creates database with users table includes:
-       create query
-       insert query
-       select query
+        create query
+        insert query
+        select query
     """
 
-    def __init__(self, tablename="users", userId="userId", password="password", username="username"):
+    def __init__(self, tablename="users", password="password", username="username", email="email"):
         self.__tablename = tablename
-        self.__userId = userId
         self.__password = password
         self.__username = username
+        self.__email = email
         conn = sqlite3.connect('test.db')
         print("Opened database successfully")
-        query_str = "CREATE TABLE IF NOT EXISTS " + tablename + "(" + self.__userId + " " + \
-                    " INTEGER PRIMARY KEY AUTOINCREMENT ,"
+        query_str = "CREATE TABLE IF NOT EXISTS " + tablename + "(" + self.__username + " " + \
+                    " TEXT PRIMARY KEY AUTOINCREMENT ,"
         query_str += " " + self.__password + " TEXT    NOT NULL ,"
-        query_str += " " + self.__username + " TEXT    NOT NULL );"
+        query_str += " " + self.__email + " TEXT    NOT NULL );"
 
         # conn.execute("drop table users")
         conn.execute(query_str)
@@ -33,41 +33,39 @@ class Users:
     def get_table_name(self):
         return self.__tablename
 
-    def insert_user(self, username, password):
+    def insert_user(self, username, password, email):
         conn = sqlite3.connect('test.db')
-        insert_query = "INSERT INTO " + self.__tablename + " (" + self.__username + "," + self.__password + ") VALUES" \
-                   "(" + "'" + username + "'" + "," + "'" + password + "'" + ");"
+        insert_query = "INSERT INTO " + self.__tablename + " (" + self.__password + "," + self.__username + "," + self.__email +") VALUES" \
+                   "(" + "'" + password + "'" + "," + "'" + username + "'" + "," + "'" + email + "'" + ");"
         print(insert_query)
         conn.execute(insert_query)
         conn.commit()
         conn.close()
         print("Record created successfully")
 
-    def is_exist(self, new_username):
+    def is_username_exist(self, new_username):
         pass
 
-    @staticmethod
-    def select_user_by_id():
+    def is_email_exist(self, new_eamil):
+        pass
+
+    def check_password(self, password):
+        pass
+
+    def select_user_by_username(self, username):
         conn = sqlite3.connect('test.db')
         print("Opened database successfully")
         str1 = "select * from users;"
-
-        """strsql = "SELECT userId, username, password  from " +  self.__tablename + " where " + self.__userId + "=" \
-            + str(userId)
-        """
+        strsql = "SELECT password, username, email from " + self.__tablename + " where " + self.__username + "=" \
+            + str(username)
         print(str1)
         cursor = conn.execute(str1)
         for row in cursor:
-            print("userId = ", row[0])
+            print("password = ", row[0])
             print("username = ", row[1])
-            print("password = ", row[2])
-
+            print("email = ", row[2])
         print("Operation done successfully")
         conn.close()
 
 
-u = Users()
-u.insert_user("a", "abc")
-u.insert_user("1234", "Magniv2")
-u.insert_user("333333", "Magniv")
-u.select_user_by_id()
+

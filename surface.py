@@ -164,14 +164,21 @@ class Surface:
         tk.mainloop()  # last line.
 
     def submit_log_in(self, username, password):
+        """
+
+        :param username:
+        :param password:
+        :return:
+        """
         self.username = username.get()
         self.password = password.get()
         msg = "login " + self.username + " " + self.password
         self.sock.send(msg.encode())
-        if self.sock.recv(1024).decode() == 'doesntexist':
+        if not bool(self.sock.recv(1024).decode()): # 'true' if managed to log in and 'false' otherwise.
             messagebox.showinfo(title="Log in failed.", message="username or password are wrong.")
             self.login_screen()
         else:
+            messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
             self.play_screen()
 
     def register_screen(self):
@@ -233,18 +240,33 @@ class Surface:
         tk.mainloop()  # last line.
 
     def submit_register(self, username, password, confirm_password, email_adress):
+        """
+
+        :param username:
+        :param password:
+        :param confirm_password:
+        :param email_adress:
+        :return:
+        """
         self.username = username.get()
         self.password = password.get()
         self.confirm_password = confirm_password.get()
-        self.email = email_adress.get()
+        self.email_address = email_adress.get()
         if self.password != self.confirm_password:
             messagebox.showinfo(title=" password not identical.", message="the password confirm should be exactly like the password")
             self.register_screen()
         if ('@' not in self.email_address) or ('.com' not in self.email_address):
             messagebox.showinfo(title="Invalid Email address", message="Must contain '@' and '.com'")
             self.register_screen()
-        msg = "register " + self.username + " " + self.password + " " + self.email
+        msg = "register " + self.username + " " + self.password + " " + self.email_address
         self.sock.send(msg.encode())
+        if_ok = self.sock.recv(1024).decode()  # 'true' if managed to register and 'false' otherwise.
+        if bool(if_ok):  # managed to register.
+            messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
+            self.play_screen()
+        else:  #
+            messagebox.showinfo(title="Registration failed.", message="try again.")
+            self.register_screen()
 
     def play_screen(self):
         s = Screen(self.sock, self.username)
