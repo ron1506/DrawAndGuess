@@ -154,7 +154,7 @@ class Surface:
         password_label = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
         password_label.place(x=150, y=480)
 
-        password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
+        password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black", show='*')
         password.place(x=400, y=480)
 
         arrow_img = tk.PhotoImage(file='arrow.png')
@@ -222,14 +222,13 @@ class Surface:
         password_button = tk.Label(relief='raise', text='Password: ', font=('bubble', 28), bg='orange', fg="black")
         password_button.place(x=200, y=350)
 
-        password = tk.Entry(relief='solid', font=('bubble', 20)
-                                        , bg='orange', fg="black")
+        password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black", show='*')
         password.place(x=400, y=350)
 
         confirm_password_button = tk.Label(relief='raise', text='Confirm Password: ', font=('bubble', 28), bg='orange', fg="black")
         confirm_password_button.place(x=60, y=450)
 
-        confirm_password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black")
+        confirm_password = tk.Entry(relief='solid', font=('bubble', 20), bg='orange', fg="black", show='*')
         confirm_password.place(x=400, y=450)
 
         arrow_img = tk.PhotoImage(file='arrow.png')
