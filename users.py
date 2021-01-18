@@ -44,15 +44,20 @@ class Users:
         print("Record created successfully")
 
     def is_username_exist(self, new_username):
-        pass
+        return True
 
     def is_email_exist(self, new_eamil):
-        pass
+        return True
 
     def check_password(self, password):
         pass
 
     def select_user_by_username(self, username):
+        """
+
+        :param username:
+        :return:
+        """
         conn = sqlite3.connect('test.db')
         print("Opened database successfully")
         str1 = "select * from users;"

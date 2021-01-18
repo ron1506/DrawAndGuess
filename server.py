@@ -62,6 +62,7 @@ class Server(object):
         while True:
             try:
                 request = client_socket.recv(1024).decode()  # getting the coordinates from the client,
+                print(request)
                 if 'login' in request:  # asks to log in.
                     lst = request.split(" ")
                     if self.u.is_exist(lst[1]):  # לבדוק אם משתמש קיים

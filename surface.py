@@ -258,6 +258,7 @@ class Surface:
             messagebox.showinfo(title="Invalid Email address", message="Must contain '@' and '.com'")
             self.register_screen()
         msg = "register " + self.username + " " + self.password + " " + self.email_address
+        print(msg)
         self.sock.send(msg.encode())
         if_ok = self.sock.recv(1024).decode()  # 'true' if managed to register and 'false' otherwise.
         if bool(if_ok):  # managed to register.
