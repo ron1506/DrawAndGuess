@@ -174,7 +174,8 @@ class Surface:
         self.password = password.get()
         msg = "login " + self.username + " " + self.password
         self.sock.send(msg.encode())
-        if not bool(self.sock.recv(1024).decode()): # 'true' if managed to log in and 'false' otherwise.
+        is_ok = self.sock.recv(1024).decode()
+        if not bool(is_ok): # 'true' if managed to log in and 'false' otherwise.
             messagebox.showinfo(title="Log in failed.", message="username or password are wrong.")
             self.login_screen()
         else:
@@ -238,19 +239,19 @@ class Surface:
         continue_button.place(x=800, y=500)
         tk.mainloop()  # last line.
 
-    def submit_register(self, username, password, confirm_password, email_adress):
+    def submit_register(self, username, password, confirm_password, email_address):
         """
 
         :param username:
         :param password:
         :param confirm_password:
-        :param email_adress:
+        :param email_address:
         :return:
         """
         self.username = username.get()
         self.password = password.get()
         self.confirm_password = confirm_password.get()
-        self.email_address = email_adress.get()
+        self.email_address = email_address.get()
         if self.password != self.confirm_password:
             messagebox.showinfo(title=" password not identical.", message="the password confirm should be exactly like the password")
             self.register_screen()

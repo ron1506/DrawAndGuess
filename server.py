@@ -63,20 +63,20 @@ class Server(object):
             try:
                 request = client_socket.recv(1024).decode()  # getting the coordinates from the client,
                 print(request)
+                lst = request.split(" ")
                 if 'login' in request:  # asks to log in.
-                    lst = request.split(" ")
-                    if self.u.is_exist(lst[1]):  # לבדוק אם משתמש קיים
+                    if self.u.is_username_exist(lst[1]):  # לבדוק אם משתמש קיים
                         if self.u.check_password(lst[2]):  # לבדוק אם סיסמה תקינה
-                            pass  # sends the client that the client is connected 'true'.
+                            client_socket.send(str(True).encode())  # sends the client that the client is connected 'true'.
                         else:
-                            pass  # sends the client that the password is wrong 'false'.
+                            client_socket.send(str(False).encode())  # sends the client that the password is wrong 'false'.
                     else:
-                        pass  # sends the client that user doesn't exist 'false'.
+                        client_socket.send(str(False).encode())  # sends the client that user doesn't exist 'false'.
                 elif 'register' in request:
                     if (not self.u.is_username_exist(lst[1])) and (not self.u.is_email_exist(lst[3])):
-                        self.u.insert_user(lst[1], lst[2], lst[3])
+                        self.u.insert_user(lst[1], lst[2], lst[3])  # לשלוח למשתמש שהתחבר בהצלחה
                     else:
-                        pass  # sends the server that the username is already taken.
+                        client_socket.send(str(False).encode())  # sends the client that the username is already taken.
                 print(self.list_all_clients)
                 print(len(self.list_all_clients))
                 for i in range(len(self.list_all_clients)):
