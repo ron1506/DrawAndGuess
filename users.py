@@ -14,14 +14,11 @@ class Users:
         self.__password = password
         self.__username = username
         self.__email = email
-        conn = sqlite3.connect('test.db')
+        conn = sqlite3.connect('users.db')
         print("Opened database successfully")
-        query_str = "CREATE TABLE IF NOT EXISTS " + tablename + "(" + self.__username + " " + \
-                    " TEXT PRIMARY KEY AUTOINCREMENT ,"
-        query_str += " " + self.__password + " TEXT    NOT NULL ,"
-        query_str += " " + self.__email + " TEXT    NOT NULL );"
-
-        # conn.execute("drop table users")
+        query_str = "CREATE TABLE " + self.__tablename + " (" + self.__username +  "	TEXT NOT NULL UNIQUE, " +\
+            self.__password + "	TEXT NOT NULL," + self.__email+ " TEXT NOT NULL UNIQUE,PRIMARY KEY(" + username + "));"
+        conn.execute("drop table users")
         conn.execute(query_str)
         print("Table created successfully")
         conn.commit()
@@ -35,25 +32,13 @@ class Users:
 
     def insert_user(self, username, password, email):
         conn = sqlite3.connect('test.db')
-        insert_query = "INSERT INTO " + self.__tablename + " (" + self.__password + "," + self.__username + "," + self.__email +") VALUES" \
+        insert_query = "INSERT INTO " + self.__tablename + " (" + self.__username + "," + self.__password + "," + self.__email +") VALUES" \
                    "(" + "'" + password + "'" + "," + "'" + username + "'" + "," + "'" + email + "'" + ");"
         print(insert_query)
         conn.execute(insert_query)
         conn.commit()
         conn.close()
         print("Record created successfully")
-
-    def is_username_exist(self, username):
-        """
-
-        :param username:
-        :param email:
-        :return:
-        """
-        user = self.select_user_by_username(username)
-        if username in str(user):
-            return True
-        return False
 
     def check_password(self, username, email, password):
         """
@@ -68,23 +53,29 @@ class Users:
             return True
         return False
 
-    def select_user_by_username(self, username):
+    def is_username_exist(self, username, email):
         """
 
         :param username:
         :return:
         """
-        conn = sqlite3.connect('test.db')
+        conn = sqlite3.connect('users.db')
         print("Opened database successfully")
-        str1 = "SELECT username, password, email FROM" + self.__tablename + " WHERE username = " + username
+        str1 = "SELECT username, password, email FROM" + self.__tablename + " WHERE username = " + username + "AND email = " + email
         cursor = conn.execute(str1)
-        user = cursor
+        ok = True
+        for row in cursor:
+            ok = ok and username == row[0]
+            # print("password = ", row[1])
+            ok = ok and email == row[2]
+
         print("Operation done successfully")
         conn.close()
-        return user
+        return ok
 
-    def email_is_exist(self, email):
-        user = self.select_user_by_username(email)
-        if email in str(user):
-            return True
-        return False
+
+
+
+
+u1 = Users()
+u1.insert_user('ron', '1234', 'a@a.com')
