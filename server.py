@@ -17,7 +17,7 @@ class Server(object):
         self.ip = ip
         self.port = port
         self.list_all_clients = []  # creating a list with all client's info.
-        self.u = Users
+        self.u = Users()
         self.start()
 
     def start(self):
@@ -67,20 +67,15 @@ class Server(object):
                 lst = request.split(" ")
                 if lst[0] == 'login':  # asks to log in.
                     print("got to login")
-                    if self.u.is_username_exist(lst[1], lst[3]):  # לבדוק אם משתמש קיים
-                        if self.u.check_password(lst[2]):  # לבדוק אם סיסמה תקינה
-                            client_socket.send("True".encode())  # sends the client that the client is connected 'true'.
-                        else:
-                            client_socket.send("False".encode())  # sends the client that the password is wrong 'false'.
+                    if self.u.to_log_in(lst[1], lst[2], lst[3]):  # לבדוק אם משתמש קיים וסיסמה תקינה
+                        client_socket.send("True".encode())  # sends the client that the client is connected 'true'.
                     else:
-                        client_socket.send("False".encode())  # sends the client that user doesn't exist 'false'.
+                        # sends the client that the username\ email\ password is wrong 'false'.
+                        client_socket.send("False".encode())
                 elif lst[0] == 'register':
                     print("got to register")
-                    print(lst[1], lst[3])
-                    if not self.u.is_username_exist(lst[1], lst[3]):
-                        print("noder")
+                    if self.u.to_register(lst[1], lst[2], lst[3]):
                         client_socket.send("True".encode())
-                        self.u.insert_user(lst[1], lst[2], lst[3])  # לשלוח למשתמש שהתחבר בהצלחה
                     else:
                         client_socket.send("False".encode())  # sends the client that the username is already taken.
                 print(self.list_all_clients)
@@ -88,7 +83,8 @@ class Server(object):
                 for i in range(len(self.list_all_clients)):
                     self.list_all_clients[i][0].send(request)
             except Exception as e:
-                print(e)
+                pass
+                # print(e)
 
 
 if __name__ == '__main__':

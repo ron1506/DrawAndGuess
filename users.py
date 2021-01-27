@@ -14,15 +14,10 @@ class Users:
         self.__password = password
         self.__username = username
         self.__email = email
-        conn = sqlite3.connect('users.db')
+        self.conn = sqlite3.connect('users.db')
         print("Opened database successfully")
-        query_str = "CREATE TABLE " + self.__tablename + " (" + self.__username +  "	TEXT NOT NULL UNIQUE, " +\
-            self.__password + "	TEXT NOT NULL," + self.__email+ " TEXT NOT NULL UNIQUE,PRIMARY KEY(" + username + "));"
-        conn.execute("drop table users")
-        conn.execute(query_str)
         print("Table created successfully")
-        conn.commit()
-        conn.close()
+        #self.conn.commit()
 
     def __str__(self):
         return "table  name is ", self.__tablename
@@ -31,16 +26,16 @@ class Users:
         return self.__tablename
 
     def insert_user(self, username, password, email):
-        conn = sqlite3.connect('test.db')
-        insert_query = "INSERT INTO " + self.__tablename + " (" + self.__username + "," + self.__password + "," + self.__email +") VALUES" \
-                   "(" + "'" + password + "'" + "," + "'" + username + "'" + "," + "'" + email + "'" + ");"
-        print(insert_query)
-        conn.execute(insert_query)
-        conn.commit()
-        conn.close()
-        print("Record created successfully")
+        print("i am inserting the user")
+        insert_query = "INSERT INTO Users (username, password, email) \
+              VALUES (?, ?, ?)"
+        self.conn.execute(insert_query, [username, password, email])
+        print("I have inserted the user, now lets check")
+        print(list(self.conn.execute('SELECT * FROM Users WHERE email=?', (email,))))
+        #self.conn.commit()
+        # print("Record created successfully")
 
-    def check_password(self, username, email, password):
+    def to_register(self, username, password, email):
         """
 
         :param username:
@@ -48,34 +43,31 @@ class Users:
         :param password:
         :return:
         """
-        user = self.select_user_by_username(username, email)
-        if password in user:
-            return True
-        return False
+        print("i am in register!")
+        row_username = list(self.conn.execute('SELECT * FROM Users WHERE username=?', (username,)))
+        row_email = list(self.conn.execute('SELECT * FROM Users WHERE email=?', (email,)))
+        print(row_email, row_username)
+        if len(row_username) > 0 or len(row_email) > 0:
+            return False
+        print("lets insert the user to the db")
+        self.insert_user(username, password, email)
+        return True
 
-    def is_username_exist(self, username, email):
+    def to_log_in(self, username, password, email):
         """
 
         :param username:
         :return:
         """
-        conn = sqlite3.connect('users.db')
-        print("Opened database successfully")
-        str1 = "SELECT username, password, email FROM" + self.__tablename + " WHERE username = " + username + "AND email = " + email
-        cursor = conn.execute(str1)
-        ok = True
-        for row in cursor:
-            ok = ok and username == row[0]
-            # print("password = ", row[1])
-            ok = ok and email == row[2]
+        if username == "" or password == "" or email == "":  # all fields must be filled.
+            return False
 
-        print("Operation done successfully")
-        conn.close()
-        return ok
+        row_username = list(self.conn.execute('SELECT * FROM Users WHERE username=?', (username,)))
+        row_password = list(self.conn.execute('SELECT * FROM Users WHERE password=?', (password,)))
+        row_email = list(self.conn.execute('SELECT * FROM Users WHERE email=?', (email,)))
+        if row_email == row_password == row_username and row_password != []:
+            return True
+        return False
 
 
 
-
-
-u1 = Users()
-u1.insert_user('ron', '1234', 'a@a.com')
