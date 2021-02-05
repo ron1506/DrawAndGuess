@@ -1,12 +1,14 @@
 
 from tkinter import *
 import threading
+import socket
 
 
 class Screen:
     def __init__(self, socket, username):
         self.root = Tk()
-        self.cv = Canvas(self.root, width=700, height=700, bg='white')  # creating a blank white canvas, size: 500x500.
+        self.cv = Canvas(self.root, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
+        self.root.resizable(width=FALSE, height=FALSE)
         self.x = 0  # initializing coordinates.
         self.y = 0  # initializing coordinates.
         self.server_socket = socket
@@ -23,6 +25,7 @@ class Screen:
         self.cv.bind('<B1-Motion>', self.send_coordinates)
         self.cv.pack(expand=YES, fill=BOTH)
         server_handler = threading.Thread(target=self.paint)
+        server_handler.daemon = True
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
         self.root.mainloop()
@@ -35,7 +38,7 @@ class Screen:
         """
         self.x, self.y = event.x, event.y
         x_and_y = str(self.x) + " " + str(self.y)
-        # print(x_and_y)
+        print("send: ", x_and_y)
         self.server_socket.send(x_and_y.encode())  # sending the server the coordinates.
 
     def paint(self):
@@ -48,13 +51,12 @@ class Screen:
             pos = x_and_y.split(" ")  # separating x and y
             x = int(pos[0])
             y = int(pos[1])
-            # print(x, y)
+            print("recv: ", x, y)
             self.x, self.y = x, y
             x2, y2 = (x + 1), (y + 1)
             self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
             # painting the screen in the coordinates.
             # print("other mouse position: (%s %s)" % (x, y))
-
 
 
 

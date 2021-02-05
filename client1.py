@@ -7,8 +7,6 @@ import socket
 import tkinter as tk
 from tkinter import messagebox
 from screen import Screen
-# hello its jasmin taking over ur computer maybe u will notice maybe not ar shall i say perhaps? good luck with
-# your psychometry
 
 
 class Surface:
@@ -174,11 +172,14 @@ class Surface:
         self.password = password.get()
         msg = "login " + self.username + " " + self.password
         self.sock.send(msg.encode())
-        if not bool(self.sock.recv(1024).decode()): # 'true' if managed to log in and 'false' otherwise.
-            messagebox.showinfo(title="Log in failed.", message="username or password are wrong.")
+        is_ok = self.sock.recv(1024).decode()
+        # print("thats what i get: ", is_ok)
+        if is_ok == "False":  # 'true' if managed to log in and 'false' otherwise.
+            messagebox.showinfo(title="Log in failed.", message="username or password are wrong, or user already connected.")
             self.login_screen()
         else:
             messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
+            self.root.destroy()
             self.play_screen()
 
     def register_screen(self):
@@ -238,19 +239,19 @@ class Surface:
         continue_button.place(x=800, y=500)
         tk.mainloop()  # last line.
 
-    def submit_register(self, username, password, confirm_password, email_adress):
+    def submit_register(self, username, password, confirm_password, email_address):
         """
 
         :param username:
         :param password:
         :param confirm_password:
-        :param email_adress:
+        :param email_address:
         :return:
         """
         self.username = username.get()
         self.password = password.get()
         self.confirm_password = confirm_password.get()
-        self.email_address = email_adress.get()
+        self.email_address = email_address.get()
         if self.password != self.confirm_password:
             messagebox.showinfo(title=" password not identical.", message="the password confirm should be exactly like the password")
             self.register_screen()
@@ -258,10 +259,12 @@ class Surface:
             messagebox.showinfo(title="Invalid Email address", message="Must contain '@' and '.com'")
             self.register_screen()
         msg = "register " + self.username + " " + self.password + " " + self.email_address
+        print(msg)
         self.sock.send(msg.encode())
         if_ok = self.sock.recv(1024).decode()  # 'true' if managed to register and 'false' otherwise.
         if bool(if_ok):  # managed to register.
             messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
+            self.root.destroy()
             self.play_screen()
         else:  #
             messagebox.showinfo(title="Registration failed.", message="try again.")

@@ -71,8 +71,8 @@ class Server(object):
                 lst = request.split(" ")
                 if lst[0] == 'login':  # asks to log in.
                     # print("got to login")
-                    if u.to_log_in(lst[1], lst[2]) and not self.is_online(
-                            lst[1]):  # לבדוק אם משתמש קיים וסיסמה תקינה ולא מחובר
+
+                    if u.to_log_in(lst[1], lst[2]) and not  self.is_online(lst[1]):  #  לבדוק אם משתמש קיים וסיסמה תקינה ולא מחובר
                         # print("user should be appended")
                         user_name = lst[1]
                         self.online_users.append((user_name, client_socket))
@@ -97,7 +97,7 @@ class Server(object):
             except Exception as e:
                 finished = True
                 if user_name != "":
-                    self.online_users.remove((user_name, client_socket))
+                    self.online_users.remove(user_name)
                 print(e)
 
             print(self.online_users)
