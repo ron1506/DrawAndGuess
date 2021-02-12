@@ -4,6 +4,8 @@
 import socket
 import threading
 from users import Users
+import random
+from pickle import dumps
 
 
 class Server(object):
@@ -14,10 +16,13 @@ class Server(object):
         :param ip:
         :param port:
         """
-        self.ip = ip
-        self.port = port
+        self.list_of_words = ['banana', 'ice cream', 'chocolate', 'apple', 'ball']  # list of items
+        self.ip = ip  # the ip of the server 0.0.0.0
+        self.port = port  # the port of the server 1730
         self.list_all_clients = []  # creating a list with all client's info.
         self.online_users = []  # list of the users that are online
+        self.game_thread = threading.Thread(target=self.game)
+        self.daemon = True
         self.start()
 
     def start(self):
@@ -31,6 +36,7 @@ class Server(object):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((self.ip, self.port))  # connecting to client
             sock.listen(3)
+            self.game_thread.start()
             while True:
                 print('waiting for a new client')
                 client_socket, client_address = sock.accept()
@@ -71,8 +77,8 @@ class Server(object):
                 lst = request.split(" ")
                 if lst[0] == 'login':  # asks to log in.
                     # print("got to login")
-
-                    if u.to_log_in(lst[1], lst[2]) and not  self.is_online(lst[1]):  #  לבדוק אם משתמש קיים וסיסמה תקינה ולא מחובר
+                    if u.to_log_in(lst[1], lst[2]) and not self.is_online(
+                            lst[1]):  # לבדוק אם משתמש קיים וסיסמה תקינה ולא מחובר
                         # print("user should be appended")
                         user_name = lst[1]
                         self.online_users.append((user_name, client_socket))
@@ -97,9 +103,8 @@ class Server(object):
             except Exception as e:
                 finished = True
                 if user_name != "":
-                    self.online_users.remove(user_name)
+                    self.online_users.remove((user_name, client_socket))
                 print(e)
-
             print(self.online_users)
 
     def is_online(self, username):
@@ -112,6 +117,35 @@ class Server(object):
             if username in i:
                 return True
         return False
+
+    def game(self):
+        """
+        chooses the drawer and notifies him.
+        :return:
+        """
+        while True:
+            if len(self.online_users)>1:
+                is_guessed = False
+                online_players = self.online_users[:]
+                print("lets play")
+                for user in online_players:
+                    user[1].send('play'.encode())
+                drawer = online_players[random.choice([i for i in range(len(online_players))])]  # tuple (username,socket)
+                for user in online_players:
+                    word = self.choose_word()
+                    if user[0] == drawer[0]:
+                        user[1].send(('draw;'+word).encode())
+                    else:
+                        user[1].send(('guess;'+word).encode())
+                while not is_guessed:
+                    pass
+
+    def choose_word(self):
+        """
+        chooses a word from the list of the words that exists.
+        :return:
+        """
+        return random.choice(self.list_of_words)
 
 
 if __name__ == '__main__':

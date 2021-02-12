@@ -6,7 +6,8 @@ PyGame Multiplayer Drawing and guessing game Project 1.0
 import socket
 import tkinter as tk
 from tkinter import messagebox
-from screen import Screen
+from pickle import loads
+from screendraft import Screen
 
 
 class Surface:
@@ -184,7 +185,7 @@ class Surface:
         else:
             messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
             self.root.destroy()
-            self.play_screen()
+            self.waiting_screen()
 
     def register_screen(self):
         """
@@ -274,13 +275,49 @@ class Surface:
         if bool(if_ok):  # managed to register.
             messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
             self.root.destroy()
-            self.play_screen()
+            self.waiting_screen()
         else:  #
             messagebox.showinfo(title="Registration failed.", message="try again.")
             self.register_screen()
 
+    def waiting_screen(self):
+        self.root = tk.Tk()
+        self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
+        self.root.title("Drawing & Guessing Game- Waiting Window")  # caption of the window
+        self.root.resizable(width=tk.FALSE, height=tk.FALSE)
+
+        img = tk.PhotoImage(file='draw-and-guess.png')
+        home_screen = tk.Label(self.root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
+                               fg="black")  # creating home screen
+        home_screen.place(x=0, y=0)
+
+        lbl = tk.Label(self.root, text="waiting for more participants! ", font=("bubble", 20), bg='orange')
+        lbl.pack(padx=50, pady=100)
+
+        action = self.sock.recv(1024).decode()
+        print(action)
+        if action == 'play':
+            print("play")
+            # self.root.destroy()
+            self.play_screen()
+        self.root.mainloop()
+
     def play_screen(self):
-        s = Screen(self.sock, self.username)
+        self.root.destroy()
+        finish = "False"
+        while finish == "False":
+            s = Screen(self.sock, self.username)
+            print("im in play screen")
+            who_am_i, word_chosen = self.sock.recv(1024).decode().split(";")   # who_am_i: either a 'draw' or 'guess'
+            print("who", who_am_i)
+            print("word", word_chosen)
+            print("      ", who_am_i, "      ", word_chosen)
+            if who_am_i == 'draw':
+                print("lets go to the mall")
+                s.draw_mode(word_chosen)
+            else:
+                s.guess_mode(word_chosen)
+            finish = self.sock.recv(1024).decode()  # the server sends if the game finished
 
 
 def main():

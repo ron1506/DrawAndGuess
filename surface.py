@@ -6,7 +6,7 @@ PyGame Multiplayer Drawing and guessing game Project 1.0
 import socket
 import tkinter as tk
 from tkinter import messagebox
-from screen import Screen
+from screendraft import Screen
 
 
 class Surface:
@@ -163,7 +163,7 @@ class Surface:
 
     def submit_log_in(self, username, password):
         """
-
+        checks the the parameters that were submitted.
         :param username:
         :param password:
         :return:
@@ -241,7 +241,7 @@ class Surface:
 
     def submit_register(self, username, password, confirm_password, email_address):
         """
-
+        checks the the parameters that were submitted.
         :param username:
         :param password:
         :param confirm_password:
