@@ -5,8 +5,10 @@ import socket
 
 
 class Screen:
-    def __init__(self, socket, username):
+    def __init__(self, socket, username, score):
         self.color = 'black'
+        self.strikes = 3
+        self.score = score
         self.root = Tk()
         self.username = username
         self.cv = Canvas(self.root, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
@@ -17,16 +19,6 @@ class Screen:
         # self.root.mainloop()
         # self.main()  # calling the main function.
 
-    def main(self, is_drawing, word):
-        """
-        if the user clicks the left button, the coordinates he pressed are being send to the server.
-        :return: nothing.
-        """
-        if is_drawing:
-            self.draw_mode(word)
-        else:
-            self.guess_mode(word)
-
     def send_coordinates(self, event):
         """
         the function sending the coordinates, of the mouse when clicked on the board to the server.
@@ -34,7 +26,7 @@ class Screen:
         :return:
         """
         self.x, self.y = event.x, event.y
-        x_and_y = str(self.x) + " " + str(self.y)
+        x_and_y = str(self.x) + ";" + str(self.y)
         print("send: ", x_and_y)
         self.server_socket.send(x_and_y.encode())  # sending the server the coordinates.
 
@@ -56,20 +48,16 @@ class Screen:
             # painting the screen in the coordinates.
             # print("other mouse position: (%s %s)" % (x, y))
 
-    def send_guess(self, guess, word):
-        # msg = "guess " + guess.get()
-        strikes = 3
-        if guess.get() == word:  # if the guess is empty returning false.
-            is_correct = True
+    def check_guess(self, guess):
+        msg = "guess;" + guess.get() + ";" + self.username
+        self.server_socket.send(msg.encode())
+        response = self.server_socket.recv(1024).split(";")  # containing whether the guess is true or not and the score
+        if response[0] == "True":  # if the guess is empty returning false.
+            self.score += response[1]
         else:
-            is_correct = False
-        if is_correct:
-            guess.config(state='disabled')
-
-        else:
-            strikes -= 1
-            if strikes < 0:
-                pass
+            self.strikes -= 1
+            if self.strikes != 0:
+                self.guess_mode()
 
     def draw_mode(self, word):
         headline = Label(self.root, text=self.username)  # the name of the user on top of the screen.
@@ -85,9 +73,9 @@ class Screen:
                                bg='white', fg="black", relief="solid")  # the title of the screen.
         score_headline.place(x=10, y=50)
 
-        strikes_headline = Label(text='strikes: ' + str(self.strikes), font=('bubble', 15),
-                                 bg='white', fg="black", relief="solid")  # the strikes the user have left.
-        strikes_headline.place(x=10, y=20)
+        # strikes_headline = Label(text='strikes: ' + str(strikes), font=('bubble', 15),
+        #                          bg='white', fg="black", relief="solid")  # the strikes the user have left.
+        # strikes_headline.place(x=10, y=20)
 
         # if left button on the mouse is being clicked, it goes to the function 'send_coordinates '.
         self.cv.bind('<B1-Motion>', self.send_coordinates)
@@ -98,7 +86,7 @@ class Screen:
         server_handler.start()
         self.root.mainloop()
 
-    def guess_mode(self, word):
+    def guess_mode(self):
         headline = Label(self.root, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
         score_headline = Label(text='score: ' + str(self.score), font=('bubble', 15),  # the score
@@ -115,16 +103,13 @@ class Screen:
         guess.place(x=100, y=400)
         submit_button = Button(self.root, text="submit", relief="solid",
                                font=('cooper black', 10), fg="black", bg="#%02x%02x%02x" % (255, 255, 255),
-                               command=lambda: self.send_guess(guess, word))
+                               command=lambda: self.check_guess(guess))
         submit_button.place(x=400, y=400)
-        """is_guess_true = Label(text=str(submit_button.get()), font=('bubble', 10),
-                                 bg='white', fg="black", relief="solid")  # the title of the screen.
-        is_guess_true.place(x=30, y=30)"""
-
         self.root.mainloop()
 
     def change_color(self, color):
         self.color = color
+
 
 
 

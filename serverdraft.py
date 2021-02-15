@@ -16,11 +16,14 @@ class Server(object):
         :param ip:
         :param port:
         """
+        self. gussed_correctly = []
+        self.word = ""
         self.list_of_words = ['banana', 'ice cream', 'chocolate', 'apple', 'ball']  # list of items
         self.ip = ip  # the ip of the server 0.0.0.0
         self.port = port  # the port of the server 1730
         self.list_all_clients = []  # creating a list with all client's info.
         self.online_users = []  # list of the users that are online
+        self.online_players = []  # list of the users that play in the game
         self.game_thread = threading.Thread(target=self.game)
         self.daemon = True
         self.start()
@@ -72,9 +75,10 @@ class Server(object):
         while not finished:
             # print(self.online_users)
             try:
-                request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client,
-                print(request)
-                lst = request.split(" ")
+                request = str(client_socket.recv(1024).decode())
+                # getting a request from the client, either log in or registers separated by ';'.
+                # print(request)
+                lst = request.split(";")
                 if lst[0] == 'login':  # asks to log in.
                     # print("got to login")
                     if u.to_log_in(lst[1], lst[2]) and not self.is_online(
@@ -82,30 +86,27 @@ class Server(object):
                         # print("user should be appended")
                         user_name = lst[1]
                         self.online_users.append((user_name, client_socket))
-                        client_socket.send("True".encode())  # sends the client that the client is connected 'true'.
+                        # adds the user to the list of online clients.
+                        client_socket.send("True".encode())  # sends the client that the user is connected,'true'.
                     else:
                         # print("user should not be appended")
                         # sends the client that the username\ email\ password is wrong 'false'.
-                        client_socket.send("False".encode())
-                elif lst[0] == 'register':
+                        client_socket.send("False".encode())  # sends the client that the user isn't connected,'false'.
+                elif lst[0] == 'register':  # the user asks to register.
                     # print("got to register")
-                    if u.to_register(lst[1], lst[2], lst[3]):
+                    if u.to_register(lst[1], lst[2], lst[3]):  # לבדוק אם משתמש ודוא"ל לא קיימים וניתן להירשם
                         user_name = lst[1]
                         self.online_users.append((user_name, client_socket))
-                        client_socket.send("True".encode())
+                        # adds the user to the list of online clients.
+                        client_socket.send("True".encode())  # sends the client that the user is connected,'true'.
                     else:
-                        client_socket.send("False".encode())  # sends the client that the username is already taken.
-                else:
-                    # print(self.list_all_clients)
-                    # print(len(self.list_all_clients))
-                    for i in range(len(self.online_users)):
-                        self.online_users[i][1].send(request.encode())
+                        client_socket.send("False".encode())
+                        # sends the client that the username/mail is already taken.
             except Exception as e:
                 finished = True
-                if user_name != "":
+                if user_name != "":  # if the user quit, then he is removed from the list of online users.
                     self.online_users.remove((user_name, client_socket))
                 print(e)
-            print(self.online_users)
 
     def is_online(self, username):
         """
@@ -123,22 +124,28 @@ class Server(object):
         chooses the drawer and notifies him.
         :return:
         """
-        while True:
-            if len(self.online_users)>1:
-                is_guessed = False
-                online_players = self.online_users[:]
+        finish = False
+        while not finish:  # 80 sec
+            if len(self.online_users) == 2:
+                finish = True
+                self.online_players = self.online_users[:]
                 print("lets play")
-                for user in online_players:
-                    user[1].send('play'.encode())
-                drawer = online_players[random.choice([i for i in range(len(online_players))])]  # tuple (username,socket)
-                for user in online_players:
-                    word = self.choose_word()
+                # for user in self.online_players:
+                    # print(user[0], user[1])
+                    # user[1].send('play'.encode())  # server --> user[1]
+                drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])] #  tuple (username,socket)
+                for user in self.online_players:
+                    self.word = self.choose_word()
                     if user[0] == drawer[0]:
-                        user[1].send(('draw;'+word).encode())
+                        user[1].send(('draw;'+self.word).encode())
+                        drawer_thread = threading.Thread(target=self.handle_drawer, args=(user[1],))
+                        drawer_thread.start()
+                        # self.handle_drawer(self.online_players, user[1])
                     else:
-                        user[1].send(('guess;'+word).encode())
-                while not is_guessed:
-                    pass
+                        user[1].send('guess;'.encode())
+                        guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1],))
+                        guess_thread.start()
+                        # self.handle_guesser(user[1])
 
     def choose_word(self):
         """
@@ -146,6 +153,45 @@ class Server(object):
         :return:
         """
         return random.choice(self.list_of_words)
+
+    def handle_drawer(self, client_socket):
+        # print(len(self.list_all_clients))
+        finish = False
+        while not finish:
+            try:
+                request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client,
+                for i in self.online_players:
+                    i[1].send(request.encode())
+            except ConnectionResetError:
+                finish = True
+                for i in self.online_players:
+                    if i[1] == client_socket:
+                        self.online_players.remove(i)
+                for j in self.online_users:
+                    if j[1] == client_socket:
+                        self.online_users.remove(j)
+
+    def handle_guesser(self, client_socket):
+        finish = False
+        while not finish:
+            try:
+                request = str(client_socket.recv(1024).decode())  # getting a request from the client,
+                print(request)
+                lst = request.split(";")
+                if self.word == lst[1]:
+                    self.gussed_correctly.append(lst[2])
+                    score = len(self.gussed_correctly) * 25
+                    client_socket.send(('True;' + str(score)).encode())
+                else:
+                    client_socket.send("False;".encode())
+            except ConnectionResetError:
+                finish = True
+                for i in self.online_players:
+                    if i[1] == client_socket:
+                        self.online_players.remove(i)
+                for j in self.online_users:
+                    if j[1] == client_socket:
+                        self.online_users.remove(j)
 
 
 if __name__ == '__main__':

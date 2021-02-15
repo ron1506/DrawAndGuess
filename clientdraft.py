@@ -174,17 +174,16 @@ class Surface:
         """
         self.username = username.get()
         self.password = password.get()
-        msg = "login " + self.username + " " + self.password + " " + str(self.sock)
+        msg = "login;" + self.username + ";" + self.password + ";" + str(self.sock)
         self.sock.send(msg.encode())
         is_ok = self.sock.recv(1024).decode()
-        # print("thats what i get: ", is_ok)
+        print("thats what i get: ", is_ok)
         if is_ok == "False":  # 'true' if managed to log in and 'false' otherwise.
             messagebox.showinfo(title="Log in failed.",
                                 message="username or password are wrong, or user already connected.")
             self.login_screen()
         else:
             messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
-            self.root.destroy()
             self.waiting_screen()
 
     def register_screen(self):
@@ -268,56 +267,61 @@ class Surface:
         if ('@' not in self.email_address) or ('.com' not in self.email_address):
             messagebox.showinfo(title="Invalid Email address", message="Must contain '@' and '.com'")
             self.register_screen()
-        msg = "register " + self.username + " " + self.password + " " + self.email_address
+        msg = "register;" + self.username + ";" + self.password + ";" + self.email_address
         print(msg)
         self.sock.send(msg.encode())
         if_ok = self.sock.recv(1024).decode()  # 'true' if managed to register and 'false' otherwise.
-        if bool(if_ok):  # managed to register.
+        if if_ok == 'True':  # managed to register.
             messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
-            self.root.destroy()
+            self.clear_screen()
             self.waiting_screen()
         else:  #
             messagebox.showinfo(title="Registration failed.", message="try again.")
             self.register_screen()
 
     def waiting_screen(self):
-        self.root = tk.Tk()
-        self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
+        self.clear_screen()
         self.root.title("Drawing & Guessing Game- Waiting Window")  # caption of the window
-        self.root.resizable(width=tk.FALSE, height=tk.FALSE)
-
         img = tk.PhotoImage(file='draw-and-guess.png')
-        home_screen = tk.Label(self.root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
-                               fg="black")  # creating home screen
-        home_screen.place(x=0, y=0)
+        background = tk.Label(self.root, image=img)  # creating home screen
+        background.place(x=0, y=0)
 
         lbl = tk.Label(self.root, text="waiting for more participants! ", font=("bubble", 20), bg='orange')
-        lbl.pack(padx=50, pady=100)
-
-        action = self.sock.recv(1024).decode()
-        print(action)
-        if action == 'play':
-            print("play")
-            # self.root.destroy()
-            self.play_screen()
+        lbl.pack(padx=100, pady=200)
         self.root.mainloop()
+        action = self.sock.recv(1024).decode()
+        if action != "":
+            self.play_screen(action)
+        # self.root.mainloop()
 
-    def play_screen(self):
-        self.root.destroy()
-        finish = "False"
-        while finish == "False":
-            s = Screen(self.sock, self.username)
+    def play_screen(self, noder):
+        for i in range(4):
+            if i == 0:
+                s = Screen(self.sock, self.username, 0)
+            else:
+                s = Screen(self.sock, self.username, 0)
             print("im in play screen")
-            who_am_i, word_chosen = self.sock.recv(1024).decode().split(";")   # who_am_i: either a 'draw' or 'guess'
-            print("who", who_am_i)
-            print("word", word_chosen)
-            print("      ", who_am_i, "      ", word_chosen)
+            # noder = self.sock.recv(1024).decode()
+            self.root.destroy()
+            print(noder)
+            who_am_i, word_chosen = noder.split(";")   # who_am_i: either a 'draw' or 'guess'
+            # print("who", who_am_i)
+            # print("word", word_chosen)
+            # print("      ", who_am_i, "      ", word_chosen)
             if who_am_i == 'draw':
                 print("lets go to the mall")
                 s.draw_mode(word_chosen)
             else:
-                s.guess_mode(word_chosen)
-            finish = self.sock.recv(1024).decode()  # the server sends if the game finished
+                s.guess_mode()
+            # self.between_rounds_screen
+
+    def clear_screen(self):
+        lst = self.root.pack_slaves()
+        for i in lst:
+            i.destroy()
+        lst1 = self.root.place_slaves()
+        for j in lst1:
+            j.destroy()
 
 
 def main():
