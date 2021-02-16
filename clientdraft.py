@@ -5,6 +5,7 @@ PyGame Multiplayer Drawing and guessing game Project 1.0
 """
 import socket
 import tkinter as tk
+import threading
 from tkinter import messagebox
 from pickle import loads
 from screendraft import Screen
@@ -288,23 +289,25 @@ class Surface:
 
         lbl = tk.Label(self.root, text="waiting for more participants! ", font=("bubble", 20), bg='orange')
         lbl.pack(padx=100, pady=200)
-        self.root.mainloop()
-        action = self.sock.recv(1024).decode()
-        if action != "":
-            self.play_screen(action)
         # self.root.mainloop()
+        # action = self.sock.recv(1024).decode()
+        # if action != "":
+        #     self.play_screen(action)
+        play_thread = threading.Thread(target=self.play_screen)
+        play_thread.start()
+        self.root.mainloop()
 
-    def play_screen(self, noder):
+    def play_screen(self):
         for i in range(4):
+            mode = self.sock.recv(1024).decode()
+            self.root.destroy()
             if i == 0:
                 s = Screen(self.sock, self.username, 0)
             else:
                 s = Screen(self.sock, self.username, 0)
             print("im in play screen")
-            # noder = self.sock.recv(1024).decode()
-            self.root.destroy()
-            print(noder)
-            who_am_i, word_chosen = noder.split(";")   # who_am_i: either a 'draw' or 'guess'
+            print(mode)
+            who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
             # print("who", who_am_i)
             # print("word", word_chosen)
             # print("      ", who_am_i, "      ", word_chosen)
