@@ -292,31 +292,32 @@ class Surface:
         # self.root.mainloop()
         # action = self.sock.recv(1024).decode()
         # if action != "":
-        #     self.play_screen(action)
-        play_thread = threading.Thread(target=self.play_screen)
-        play_thread.start()
+        self.play_screen()
+        # play_thread = threading.Thread(target=self.play_screen)
+        # play_thread.start()
         self.root.mainloop()
 
     def play_screen(self):
-        for i in range(4):
+        # print("im in play screen")
+        self.root.destroy()
+        score = 0
+        for i in range(2):
             mode = self.sock.recv(1024).decode()
-            self.root.destroy()
+            print(mode)
             if i == 0:
                 s = Screen(self.sock, self.username, 0)
             else:
-                s = Screen(self.sock, self.username, 0)
-            print("im in play screen")
-            print(mode)
+                s = Screen(self.sock, self.username, score)
             who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
             # print("who", who_am_i)
             # print("word", word_chosen)
             # print("      ", who_am_i, "      ", word_chosen)
             if who_am_i == 'draw':
                 print("lets go to the mall")
-                s.draw_mode(word_chosen)
-            else:
-                s.guess_mode()
-            # self.between_rounds_screen
+                score = s.draw_mode(word_chosen)
+            elif 'guess' in who_am_i:
+                print("lets go to the mall 2")
+                score = s.guess_mode()
 
     def clear_screen(self):
         lst = self.root.pack_slaves()

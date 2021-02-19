@@ -37,7 +37,7 @@ class Screen:
         """
         while True:
             x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
-            pos = x_and_y.split(" ")  # separating x and y
+            pos = x_and_y.split(";")  # separating x and y
             print("pos ", pos)
             x = int(pos[0])
             y = int(pos[1])
@@ -62,14 +62,14 @@ class Screen:
     def draw_mode(self, word):
         headline = Label(self.root, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
-        print("helloooooooo")
+        # print("helloooooooo")
 
         print("word = ", word)
         red_button = Button(self.root, command=lambda: self.change_color('red'), bg='red')
-        red_button.place(x=450, y=10)
+        red_button.place(x=450, y=20)
         word_label = Label(self.root, text="you need to draw: " + word)
         word_label.pack()
-        score_headline = Label(text='score: ' + str(self.score), font=('bubble', 15),  # the score
+        score_headline = Label(self.root, text='score: ' + str(self.score), font=('bubble', 15),  # the score
                                bg='white', fg="black", relief="solid")  # the title of the screen.
         score_headline.place(x=10, y=50)
 
@@ -85,27 +85,32 @@ class Screen:
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
         self.root.mainloop()
+        return self.score
 
     def guess_mode(self):
+        print("into guess mode")
         headline = Label(self.root, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
-        score_headline = Label(text='score: ' + str(self.score), font=('bubble', 15),  # the score
-                               bg='white', fg="black", relief="solid")  # the title of the screen.
+        print("into guess mode 1")
+        score_headline = Label(self.root, text='score: ' + str(self.score), font=('bubble', 15),  # the score
+                               bg='white', fg="black", relief="solid")
         score_headline.place(x=10, y=50)
-
-        strikes_headline = Label(text='strikes: ' + str(self.strikes), font=('bubble', 15),
+        print("into guess mode 2")
+        strikes_headline = Label(self.root, text='strikes: ' + str(self.strikes), font=('bubble', 15),
                                  bg='white', fg="black", relief="solid")  # the strikes the user have left.
         strikes_headline.place(x=10, y=20)
-
+        print("into guess mode 3")
         guess = Entry(self.root, relief='solid', font=('bubble', 10), bg='white', fg="black")
         guess.delete(0, END)
         guess.insert(0, 'enter a guess')
         guess.place(x=100, y=400)
+        print("into guess mode 4")
         submit_button = Button(self.root, text="submit", relief="solid",
                                font=('cooper black', 10), fg="black", bg="#%02x%02x%02x" % (255, 255, 255),
                                command=lambda: self.check_guess(guess))
         submit_button.place(x=400, y=400)
         self.root.mainloop()
+        return self.score
 
     def change_color(self, color):
         self.color = color

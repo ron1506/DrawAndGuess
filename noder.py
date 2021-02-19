@@ -1,28 +1,44 @@
-import tkinter as tk
+from tkinter import *
 
-root = tk.Tk()
-root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
-root.title("Drawing & Guessing Game- Waiting Window")  # caption of the window
-root.resizable(width=tk.FALSE, height=tk.FALSE)
-img = tk.PhotoImage(file='draw-and-guess.png')
-background = tk.Label(root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
-                      fg="black")  # creating home screen
-background.place(x=0, y=0)
+strikes = 3
+score = 0
+root = Tk()
+username = 'ron'
+cv = Canvas(root, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
+root.resizable(width=FALSE, height=FALSE)
 
-lst = root.pack_slaves()
-for i in lst:
-    i.destroy()
-lst1 = root.place_slaves()
-for j in lst1:
-    j.destroy()
-
-
-img = tk.PhotoImage(file='draw-and-guess.png')
-background = tk.Label(root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
-                      fg="black")  # creating home screen
-background.place(x=0, y=0)
-
-lbl = tk.Label(root, text="waiting for more participants! ", font=("bubble", 20), bg='orange')
-lbl.pack(padx=50, pady=100)
-
+print("into guess mode")
+headline = Label(cv, text=username)  # the name of the user on top of the screen.
+headline.pack()
+print("into guess mode 1")
+score_headline = Label(cv, text='score: ' + str(score), font=('bubble', 15),  # the score
+                       bg='white', fg="black", relief="solid")
+score_headline.place(x=10, y=50)
+print("into guess mode 2")
+strikes_headline = Label(cv, text='strikes: ' + str(strikes), font=('bubble', 15),
+                         bg='white', fg="black", relief="solid")  # the strikes the user have left.
+strikes_headline.place(x=10, y=20)
+print("into guess mode 3")
+guess = Entry(cv, relief='solid', font=('bubble', 10), bg='white', fg="black")
+guess.delete(0, END)
+guess.insert(0, 'enter a guess')
+guess.place(x=100, y=400)
+print("into guess mode 4")
+submit_button = Button(cv, text="submit", relief="solid",
+                       font=('cooper black', 10), fg="black", bg="#%02x%02x%02x" % (255, 255, 255),
+                       command=lambda: check_guess(guess))
+submit_button.place(x=400, y=400)
 root.mainloop()
+
+
+def check_guess(guess):
+    pass
+    # msg = "guess;" + guess.get() + ";" + username
+    # server_socket.send(msg.encode())
+    # response = server_socket.recv(1024).split(";")  # containing whether the guess is true or not and the score
+    # if response[0] == "True":  # if the guess is empty returning false.
+    #     score += response[1]
+    # else:
+    #     strikes -= 1
+    #     if trikes != 0:
+    #         guess_mode()
