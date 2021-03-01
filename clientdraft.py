@@ -168,7 +168,6 @@ class Surface:
 
     def submit_log_in(self, username, password):
         """
-
         :param username:
         :param password:
         :return:
@@ -250,7 +249,6 @@ class Surface:
 
     def submit_register(self, username, password, confirm_password, email_address):
         """
-
         :param username:
         :param password:
         :param confirm_password:
@@ -336,5 +334,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

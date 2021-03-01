@@ -6,7 +6,7 @@ import threading
 from users import Users
 import random
 from pickle import dumps
-
+import time
 
 class Server(object):
 
@@ -130,9 +130,6 @@ class Server(object):
                 finish = True
                 self.online_players = self.online_users[:]
                 print("lets play")
-                # for user in self.online_players:
-                    # print(user[0], user[1])
-                    # user[1].send('play'.encode())  # server --> user[1]
                 drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])] #  tuple (username,socket)
                 for user in self.online_players:
                     self.word = self.choose_word()
@@ -172,26 +169,26 @@ class Server(object):
                         self.online_users.remove(j)
 
     def handle_guesser(self, client_socket):
-        finish = False
-        while not finish:
-            try:
-                request = str(client_socket.recv(1024).decode())  # getting a request from the client,
-                print(request)
-                lst = request.split(";")
-                if self.word == lst[1]:
-                    self.gussed_correctly.append(lst[2])
-                    score = len(self.gussed_correctly) * 25
-                    client_socket.send(('True;' + str(score)).encode())
-                else:
-                    client_socket.send("False;".encode())
-            except ConnectionResetError:
-                finish = True
-                for i in self.online_players:
-                    if i[1] == client_socket:
-                        self.online_players.remove(i)
-                for j in self.online_users:
-                    if j[1] == client_socket:
-                        self.online_users.remove(j)
+        # finish = False
+        # while not finish:
+        try:
+            request = str(client_socket.recv(1024).decode())  # getting a guess from the client,
+            print(request)
+            lst = request.split(";")
+            if self.word == lst[1]:
+                self.gussed_correctly.append(lst[2])
+                score = len(self.gussed_correctly) * 25
+                client_socket.send(('True;' + str(score)).encode())
+            else:
+                client_socket.send("False;".encode())
+        except ConnectionResetError:
+            # finish = True
+            for i in self.online_players:
+                if i[1] == client_socket:
+                    self.online_players.remove(i)
+            for j in self.online_users:
+                if j[1] == client_socket:
+                    self.online_users.remove(j)
 
 
 if __name__ == '__main__':
