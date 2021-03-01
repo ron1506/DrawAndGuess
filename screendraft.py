@@ -4,10 +4,11 @@ import socket
 
 
 class Screen:
-    def __init__(self, socket, username, score):
+    def __init__(self, socket, username, score, mode, word):
         self.color = 'black'
         self.strikes = 3
         self.score = score
+        self.new_score = None
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
@@ -15,8 +16,12 @@ class Screen:
         self.x = 0  # initializing coordinates.
         self.y = 0  # initializing coordinates.
         self.server_socket = socket
-        # self.root2.mainloop()
-        # self.main()  # calling the main function.
+        self.word = word
+        if mode == "draw":
+            self.draw_mode()
+        else:
+            self.guess_mode()
+        self.root2.mainloop()
 
     def send_coordinates(self, event):
         """
@@ -38,37 +43,35 @@ class Screen:
             x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
             pos = x_and_y.split(";")  # separating x and y
             print("pos ", pos)
-            x = int(pos[0])
-            y = int(pos[1])
-            print("recv: ", x, y)
-            self.x, self.y = x, y
-            x2, y2 = (x + 1), (y + 1)
-            self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
+            try:
+                x = int(pos[0])
+                y = int(pos[1])
+                print("recv: ", x, y)
+                self.x, self.y = x, y
+                x2, y2 = (x + 1), (y + 1)
+                self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
+            except ValueError:
+                self.new_score = int(pos[1])
             # painting the screen in the coordinates.
             # print("other mouse position: (%s %s)" % (x, y))
 
     def check_guess(self, guess):
         print("got to check guess")
-        msg = "guess;" + guess.get() + ";" + self.username
-        self.server_socket.send(msg.encode())
-        response = str(self.server_socket.recv(1024).decode()).split(";")  # containing whether the guess is true or not and the score
-        if response[0] == "True":  # if the guess is empty returning false.
-            self.score += response[1]
-            self.guess_mode()
+        if guess.get() == self.word:
+            self.server_socket.send(('True;' + self.username).encode())
         else:
+            self.server_socket.send(('False;' + self.username).encode())
             self.strikes -= 1
-            if self.strikes != 0:
-                self.guess_mode()
 
-    def draw_mode(self, word):
+    def draw_mode(self):
         headline = Label(self.root2, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
         # print("helloooooooo")
 
-        print("word = ", word)
+        print("word = ", self.word)
         red_button = Button(self.root2, command=lambda: self.change_color('red'), bg='red')
         red_button.place(x=450, y=20)
-        word_label = Label(self.root2, text="you need to draw: " + word)
+        word_label = Label(self.root2, text="you need to draw: " + self.word)
         word_label.pack()
         score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
                                bg='white', fg="black", relief="solid")  # the title of the screen.
@@ -85,7 +88,7 @@ class Screen:
         server_handler.daemon = True
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
-        self.root2.mainloop()
+        # self.root2.mainloop()
         return self.score
 
     def guess_mode(self):
@@ -111,7 +114,7 @@ class Screen:
         server_handler.daemon = True
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
-        self.root2.mainloop()
+        # self.root2.mainloop()
         return self.score
 
     def change_color(self, color):

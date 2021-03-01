@@ -32,6 +32,7 @@ class Surface:
             self.sock.connect((self.ip, self.port))  # connecting to server
             print('connected to server')  # to see if client connected successfully.
             self.open_screen()
+            self.root.mainloop()
         except socket.error as e:
             print(e)
 
@@ -49,6 +50,7 @@ class Surface:
         img = tk.PhotoImage(file='draw-and-guess.png')
         home_screen = tk.Label(self.root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
                                fg="black")  # creating home screen
+        home_screen.photo = img
         home_screen.place(x=0, y=0)
 
         registration_text = tk.Label(self.root, text="First Game?",
@@ -72,9 +74,10 @@ class Surface:
         info_img = tk.PhotoImage(file='question-mark.png')
         info_button = tk.Button(self.root, image=info_img, bg="#%02x%02x%02x" % (255, 165, 0),  # creating info button
                                 fg="black", command=self.info_screen)
+        info_button.photo = info_img
         info_button.place(x=850, y=50)
 
-        tk.mainloop()  # last line
+        # tk.mainloop()  # last line
 
     def info_screen(self):
         """
@@ -112,20 +115,23 @@ class Surface:
         home_button_img = tk.PhotoImage(file='home-icon.png')
         home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
                                    bg='orange', command=self.open_screen)  # creating home screen
+        home_sc_button.photo = home_button_img
         home_sc_button.place(x=20, y=20)
 
         dice_img = tk.PhotoImage(file='dice-icon.png')  # adding decorations, dice photo
         dice_button = tk.Label(self.root, image=dice_img, relief="solid",
                                bg="#%02x%02x%02x" % (255, 165, 0))  # creating dice image
+        dice_button.photo = dice_img
         dice_button.place(x=50, y=560)
 
-        tk.mainloop()  # last line.
+        # tk.mainloop()  # last line.
 
     def login_screen(self):
         """
         creating the screen that will open after pressing the log in button, with option to log in to the game.
         :return:
         """
+        #self.clear_screen()
         self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Log In Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
@@ -136,6 +142,7 @@ class Surface:
         img = tk.PhotoImage(file='draw-and-guess.png')
         login_screen = tk.Label(self.root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
                                 fg="black")  # creating home screen
+        login_screen.photo = img
         login_screen.place(x=0, y=0)
 
         login_headline = tk.Label(text='Please Enter The Name Of An Existing Player', font=('bubble', 23), bg='orange',
@@ -145,6 +152,7 @@ class Surface:
         home_button_img = tk.PhotoImage(file='home-icon.png')
         home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
                                    bg="#%02x%02x%02x" % (255, 165, 0), command=self.open_screen)  # creating home screen
+        home_sc_button.photo = home_button_img
         home_sc_button.place(x=20, y=20)
 
         username_label = tk.Label(relief='raise', text='Username: ', font=('bubble', 28), bg='orange', fg="black")
@@ -163,8 +171,9 @@ class Surface:
         continue_button = tk.Button(self.root, image=arrow_img, relief="solid",
                                     bg="#%02x%02x%02x" % (255, 255, 255),
                                     command=lambda: self.submit_log_in(username, password))  # creating arrow button
+        continue_button.photo = arrow_img
         continue_button.place(x=800, y=500)
-        tk.mainloop()  # last line.
+        # tk.mainloop()  # last line.
 
     def submit_log_in(self, username, password):
         """
@@ -191,6 +200,7 @@ class Surface:
         creating the screen that will open after pressing the log in button, with option to log in to the game.
         :return:
         """
+        #self.clear_screen()
         self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Registration Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
@@ -200,6 +210,7 @@ class Surface:
         img = tk.PhotoImage(file='draw-and-guess.png')
         register_screen = tk.Label(self.root, image=img, bg="#%02x%02x%02x" % (255, 255, 255),
                                    fg="black")  # creating home screen
+        register_screen.photo = img
         register_screen.place(x=0, y=0)
 
         registration_headline = tk.Label(text='Please Enter The Details Of The New Player', font=('bubble', 20),
@@ -210,6 +221,7 @@ class Surface:
         home_sc_button = tk.Button(self.root, image=home_button_img, relief="solid",
                                    bg="#%02x%02x%02x" % (255, 255, 255),
                                    command=self.open_screen)  # creating home screen button
+        home_sc_button.photo = home_button_img
         home_sc_button.place(x=20, y=20)
 
         email_button = tk.Label(relief='raise', text="Email: ", font=('bubble', 28), bg='orange', fg="black")
@@ -244,8 +256,9 @@ class Surface:
                                     bg="#%02x%02x%02x" % (255, 255, 255),
                                     command=lambda: self.submit_register(username, password, confirm_password,
                                                                          email_adress))
+        continue_button.photo = arrow_img
         continue_button.place(x=800, y=500)
-        tk.mainloop()  # last line.
+        # tk.mainloop()  # last line.
 
     def submit_register(self, username, password, confirm_password, email_address):
         """
@@ -279,43 +292,37 @@ class Surface:
             self.register_screen()
 
     def waiting_screen(self):
-        self.clear_screen()
+        #self.clear_screen()
         self.root.title("Drawing & Guessing Game- Waiting Window")  # caption of the window
         img = tk.PhotoImage(file='draw-and-guess.png')
         background = tk.Label(self.root, image=img)  # creating home screen
+        background.photo = img
         background.place(x=0, y=0)
 
         lbl = tk.Label(self.root, text="waiting for more participants! ", font=("bubble", 20), bg='orange')
         lbl.pack(padx=100, pady=200)
+        thread_wait_for_instructions = threading.Thread(target=self.play_screen)
+        # thread_wait_for_instructions.daemon = True
+        thread_wait_for_instructions.start()
         # self.root.mainloop()
-        # action = self.sock.recv(1024).decode()
-        # if action != "":
-        self.play_screen()
-        # play_thread = threading.Thread(target=self.play_screen)
-        # play_thread.start()
-        self.root.mainloop()
 
     def play_screen(self):
         # print("im in play screen")
-        self.root.destroy()
+        play_sign = self.sock.recv(4).decode()
+        print(play_sign)
+        self.root.after(0, self.root.destroy)
+        print("root destroyed in the mall")
         score = 0
         for i in range(2):
             mode = self.sock.recv(1024).decode()
             print(mode)
-            if i == 0:
-                s = Screen(self.sock, self.username, 0)
-            else:
-                s = Screen(self.sock, self.username, score)
             who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            # print("who", who_am_i)
-            # print("word", word_chosen)
-            # print("      ", who_am_i, "      ", word_chosen)
-            if who_am_i == 'draw':
-                print("lets go to the mall")
-                score = s.draw_mode(word_chosen)
-            elif 'guess' in who_am_i:
-                print("lets go to the mall 2")
-                score = s.guess_mode()
+            if i == 0:
+                s = Screen(self.sock, self.username, 0, who_am_i, word_chosen)
+            else:
+                s = Screen(self.sock, self.username, score, who_am_i, word_chosen)
+
+
 
     def clear_screen(self):
         lst = self.root.pack_slaves()
