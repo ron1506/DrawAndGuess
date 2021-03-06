@@ -317,12 +317,7 @@ class Surface:
             mode = self.sock.recv(1024).decode()
             print(mode)
             who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            if i == 0:
-                s = Screen(self.sock, self.username, 0, who_am_i, word_chosen)
-            else:
-                s = Screen(self.sock, self.username, score, who_am_i, word_chosen)
-
-
+            s = Screen(self.sock, self.username, who_am_i, word_chosen)
 
     def clear_screen(self):
         lst = self.root.pack_slaves()

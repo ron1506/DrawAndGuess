@@ -135,8 +135,9 @@ class Server(object):
                 drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])] #  tuple (username,socket)
                 for player in self.online_players:
                     player[1].send("play".encode())
+
+                self.word = self.choose_word()
                 for user in self.online_players:
-                    self.word = self.choose_word()
                     if user[0] == drawer[0]:
                         user[1].send(('draw;'+self.word).encode())
                         drawer_thread = threading.Thread(target=self.handle_drawer, args=(user[1],))
@@ -144,7 +145,7 @@ class Server(object):
                         # self.handle_drawer(self.online_players, user[1])
                     else:
                         user[1].send(('guess;'+self.word).encode())
-                        guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1],))
+                        guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1], drawer[1]))
                         guess_thread.start()
                         # self.handle_guesser(user[1])
 
@@ -172,7 +173,7 @@ class Server(object):
                     if j[1] == client_socket:
                         self.online_users.remove(j)
 
-    def handle_guesser(self, client_socket):
+    def handle_guesser(self, guesser_socket, drawer_socket):
         print("handling guesser")
         finish = False
         # while not finish:
@@ -181,25 +182,26 @@ class Server(object):
         while not did_guess and number_guesses < 3 and not finish:
             print("I am in loop")
             try:
-                request = client_socket.recv(1024).decode()  # if guessed correctly or not
+                request = guesser_socket.recv(1024).decode()  # if guessed correctly or not
                 number_guesses += 1
                 print(request)
                 lst = request.split(";")
                 if lst[0] == 'True':
                     self.gussed_correctly.append(lst[1])
                     score = (3 - len(self.gussed_correctly)) * 25
-                    client_socket.send(('score;' + str(score)).encode())
+                    guesser_socket.send(('score;' + str(score)).encode())
+                    drawer_socket.send(('score;' + str(30)).encode())
                     did_guess = True
                 else:
-                    client_socket.send(('score;' + str(0)).encode())
+                    guesser_socket.send(('score;' + str(0)).encode())
             except ConnectionResetError:
                 print("an error occurred")
                 finish = True
                 for i in self.online_players:
-                    if i[1] == client_socket:
+                    if i[1] == guesser_socket:
                         self.online_players.remove(i)
                 for j in self.online_users:
-                    if j[1] == client_socket:
+                    if j[1] == guesser_socket:
                         self.online_users.remove(j)
 
 

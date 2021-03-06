@@ -4,11 +4,10 @@ import socket
 
 
 class Screen:
-    def __init__(self, socket, username, score, mode, word):
+    def __init__(self, socket, username, mode, word):
         self.color = 'black'
         self.strikes = 3
-        self.score = score
-        self.new_score = None
+        self.score = 0
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
@@ -51,17 +50,36 @@ class Screen:
                 x2, y2 = (x + 1), (y + 1)
                 self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
             except ValueError:
-                self.new_score = int(pos[1])
+                self.score += int(pos[1])
+                score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
+                                       bg='white', fg="black", relief="solid")
+                score_headline.place(x=10, y=50)
             # painting the screen in the coordinates.
             # print("other mouse position: (%s %s)" % (x, y))
 
     def check_guess(self, guess):
         print("got to check guess")
+        print("word", self.word)
+        print("guess", guess.get())
         if guess.get() == self.word:
             self.server_socket.send(('True;' + self.username).encode())
+            self.clear_screen()
+            round_finish_label = Label(self.root2, text="ROUND IS OVER", font=('bubble', 15))
+            round_finish_label.pack(padx=50, pady=50)
         else:
             self.server_socket.send(('False;' + self.username).encode())
             self.strikes -= 1
+            strikes_headline = Label(self.root2, text='strikes: ' + str(self.strikes), font=('bubble', 15),
+                                     bg='white', fg="black", relief="solid")  # the strikes the user have left.
+            strikes_headline.place(x=10, y=20)
+
+    def clear_screen(self):
+        lst = self.root2.pack_slaves()
+        for i in lst:
+            i.destroy()
+        lst1 = self.root2.place_slaves()
+        for j in lst1:
+            j.destroy()
 
     def draw_mode(self):
         headline = Label(self.root2, text=self.username)  # the name of the user on top of the screen.
@@ -115,7 +133,6 @@ class Screen:
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
         # self.root2.mainloop()
-        return self.score
 
     def change_color(self, color):
         self.color = color
