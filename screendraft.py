@@ -1,6 +1,7 @@
 from tkinter import *
 import threading
 import socket
+import time
 
 
 class Screen:
@@ -64,11 +65,21 @@ class Screen:
         if guess.get() == self.word:
             self.server_socket.send(('True;' + self.username).encode())
             self.clear_screen()
+            # saying that the game has ended.
+            you_guessed_correctly = Label(self.root2, text=' you guessed the word correctly!!', font=('bubble', 15),
+                                     bg='white', fg="navy", relief="solid")
+            you_guessed_correctly.place(x=150, y=200)
+            you_guessed_correctly.after(1500, you_guessed_correctly.destroy)
+            self.clear_screen()
             round_finish_label = Label(self.root2, text="ROUND IS OVER", font=('bubble', 15))
-            round_finish_label.pack(padx=50, pady=50)
+            round_finish_label.pack(padx=100, pady=100)
         else:
             self.server_socket.send(('False;' + self.username).encode())
             self.strikes -= 1
+            you_guessed_wrongfully = Label(self.root2, text=' you guessed the word incorrectly!!', font=('bubble', 15),
+                                     bg='white', fg="red", relief="solid")
+            you_guessed_wrongfully.place(x=150, y=200)
+            you_guessed_wrongfully.after(1500, you_guessed_wrongfully.destroy)
             strikes_headline = Label(self.root2, text='strikes: ' + str(self.strikes), font=('bubble', 15),
                                      bg='white', fg="black", relief="solid")  # the strikes the user have left.
             strikes_headline.place(x=10, y=20)
