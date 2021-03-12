@@ -5,8 +5,8 @@ import socket
 import threading
 from users import Users
 import random
-from pickle import dumps
 import time
+
 
 class Server(object):
     def __init__(self, ip, port):
@@ -125,29 +125,30 @@ class Server(object):
         chooses the drawer and notifies him.
         :return:
         """
-
         finish = False
-        while not finish:  # 80 sec
-            if len(self.online_users) == 2:
-                finish = True
-                self.online_players = self.online_users[:]
-                print("lets play")
-                drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])] #  tuple (username,socket)
-                for player in self.online_players:
-                    player[1].send("play".encode())
+        while not finish:
+            if len(self.online_users) >= 2:
+                for i in range(len(self.online_users)):  # 80 sec
+                    finish = True
+                    self.online_players = self.online_users[:]
+                    print("lets play")
+                    drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])] #  tuple (username,socket)
+                    for player in self.online_players:
+                        player[1].send("play".encode())
 
-                self.word = self.choose_word()
-                for user in self.online_players:
-                    if user[0] == drawer[0]:
-                        user[1].send(('draw;'+self.word).encode())
-                        drawer_thread = threading.Thread(target=self.handle_drawer, args=(user[1],))
-                        drawer_thread.start()
-                        # self.handle_drawer(self.online_players, user[1])
-                    else:
-                        user[1].send(('guess;'+self.word).encode())
-                        guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1], drawer[1]))
-                        guess_thread.start()
-                        # self.handle_guesser(user[1])
+                    self.word = self.choose_word()
+                    for user in self.online_players:
+                        if user[0] == drawer[0]:
+                            user[1].send(('draw;'+self.word).encode())
+                            drawer_thread = threading.Thread(target=self.handle_drawer, args=(user[1],))
+                            drawer_thread.start()
+                            # self.handle_drawer(self.online_players, user[1])
+                        else:
+                            user[1].send(('guess;'+self.word).encode())
+                            guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1], drawer[1]))
+                            guess_thread.start()
+                            # self.handle_guesser(user[1])
+                    time.sleep(80)
 
     def choose_word(self):
         """

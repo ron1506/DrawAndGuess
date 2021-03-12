@@ -292,7 +292,7 @@ class Surface:
             self.register_screen()
 
     def waiting_screen(self):
-        #self.clear_screen()
+        #  self.clear_screen()
         self.root.title("Drawing & Guessing Game- Waiting Window")  # caption of the window
         img = tk.PhotoImage(file='draw-and-guess.png')
         background = tk.Label(self.root, image=img)  # creating home screen
@@ -317,7 +317,7 @@ class Surface:
             mode = self.sock.recv(1024).decode()
             print(mode)
             who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            s = Screen(self.sock, self.username, who_am_i, word_chosen)
+            s = Screen(self.sock, self.username, who_am_i, word_chosen, score)
 
     def clear_screen(self):
         lst = self.root.pack_slaves()

@@ -5,10 +5,10 @@ import time
 
 
 class Screen:
-    def __init__(self, socket, username, mode, word):
+    def __init__(self, socket, username, mode, word, score=0):
         self.color = 'black'
         self.strikes = 3
-        self.score = 0
+        self.score = score
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
@@ -22,6 +22,14 @@ class Screen:
         else:
             self.guess_mode()
         self.root2.mainloop()
+
+    def timer(self, seconds=80):
+        if seconds >= 0:
+            timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
+            timer_label.place(x=235, y=40)
+            self.root2.after(1000, lambda: self.timer(seconds-1))
+        else:
+            self.between_rounds_screen()
 
     def send_coordinates(self, event):
         """
@@ -93,10 +101,12 @@ class Screen:
             j.destroy()
 
     def draw_mode(self):
+        time_thread = threading.Thread(target=self.timer)
+        time_thread.daemon = True
+        time_thread.start()
         headline = Label(self.root2, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
         # print("helloooooooo")
-
         print("word = ", self.word)
         red_button = Button(self.root2, command=lambda: self.change_color('red'), bg='red')
         red_button.place(x=450, y=20)
@@ -121,6 +131,9 @@ class Screen:
         return self.score
 
     def guess_mode(self):
+        time_thread = threading.Thread(target=self.timer)
+        time_thread.daemon = True
+        time_thread.start()
         print("into guess mode")
         headline = Label(self.root2, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
@@ -148,7 +161,15 @@ class Screen:
     def change_color(self, color):
         self.color = color
 
-
+    def between_rounds_screen(self): pass
+    #     self.root2.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
+    #     self.root2.title("Drawing & Guessing Game- Between Rounds Window")  # caption of the window
+    #     self.root2.resizable(width=FALSE, height=FALSE)
+    #     tk_rgb = "#%02x%02x%02x" % (255, 255, 255)
+    #     self.root2["background"] = tk_rgb
+    #     another_round_button = Button(self.root2, relief="solid",
+    #                                 bg="#%02x%02x%02x" % (255, 255, 255),
+    #                                 command=lambda: self.__init__(self.server_socket, self.username, self.))
 
 
 
