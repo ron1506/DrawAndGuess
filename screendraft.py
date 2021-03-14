@@ -5,10 +5,10 @@ import time
 
 
 class Screen:
-    def __init__(self, socket, username, mode, word, score=0):
+    def __init__(self, socket, username):
         self.color = 'black'
         self.strikes = 3
-        self.score = score
+        self.score = 0
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
@@ -16,12 +16,25 @@ class Screen:
         self.x = 0  # initializing coordinates.
         self.y = 0  # initializing coordinates.
         self.server_socket = socket
-        self.word = word
-        if mode == "draw":
+        self.word = ""
+        self.main()
+        self.root2.mainloop()
+
+    def main(self):
+        """
+        in the start of every round.
+        :return:
+        """
+        self.clear_screen()
+        self.strikes = 3
+        mode = self.server_socket.recv(1024).decode()
+        print(mode)
+        who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
+        self.word = word_chosen
+        if who_am_i == "draw":
             self.draw_mode()
         else:
             self.guess_mode()
-        self.root2.mainloop()
 
     def timer(self, seconds=80):
         if seconds >= 0:
@@ -29,7 +42,7 @@ class Screen:
             timer_label.place(x=235, y=40)
             self.root2.after(1000, lambda: self.timer(seconds-1))
         else:
-            self.between_rounds_screen()
+            self.main()
 
     def send_coordinates(self, event):
         """
@@ -72,7 +85,7 @@ class Screen:
         print("guess", guess.get())
         if guess.get() == self.word:
             self.server_socket.send(('True;' + self.username).encode())
-            self.clear_screen()
+            self.cv.delete("all")
             # saying that the game has ended.
             you_guessed_correctly = Label(self.root2, text=' you guessed the word correctly!!', font=('bubble', 15),
                                      bg='white', fg="navy", relief="solid")
@@ -161,15 +174,15 @@ class Screen:
     def change_color(self, color):
         self.color = color
 
-    def between_rounds_screen(self): pass
-    #     self.root2.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
+    # def between_rounds_screen(self):
+    #     self.cv.delete("all")
+    #     self.root2.geometry("500x500")  # size: 500x500, Location: (100, 30)
     #     self.root2.title("Drawing & Guessing Game- Between Rounds Window")  # caption of the window
     #     self.root2.resizable(width=FALSE, height=FALSE)
     #     tk_rgb = "#%02x%02x%02x" % (255, 255, 255)
     #     self.root2["background"] = tk_rgb
-    #     another_round_button = Button(self.root2, relief="solid",
-    #                                 bg="#%02x%02x%02x" % (255, 255, 255),
-    #                                 command=lambda: self.__init__(self.server_socket, self.username, self.))
+    #     another_round_button = Button(self.root2, relief="solid", bg="#%02x%02x%02x" % (255, 255, 255), command=self.main())
+    #     another_round_button.place(x=200, y=200)
 
 
 

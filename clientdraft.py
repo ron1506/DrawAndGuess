@@ -312,12 +312,12 @@ class Surface:
         print(play_sign)
         self.root.after(0, self.root.destroy)
         print("root destroyed in the mall")
-        score = 0
-        for i in range(2):
-            mode = self.sock.recv(1024).decode()
-            print(mode)
-            who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            s = Screen(self.sock, self.username, who_am_i, word_chosen, score)
+        # score = 0
+        # for i in range(2):
+        #     mode = self.sock.recv(1024).decode()
+        #     print(mode)
+        #     who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
+        s = Screen(self.sock, self.username)
 
     def clear_screen(self):
         lst = self.root.pack_slaves()
