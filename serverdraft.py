@@ -132,23 +132,35 @@ class Server(object):
                     finish = True
                     self.online_players = self.online_users[:]
                     print("lets play")
-                    drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])] #  tuple (username,socket)
-                    for player in self.online_players:
+                    drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])]
+                    #   choosing the drawer, tuple (username,socket)
+                    for player in self.online_players:  # sending playing authorising to all players.
                         player[1].send("play".encode())
 
                     self.word = self.choose_word()
+                    threads_lst = []
                     for user in self.online_players:
                         if user[0] == drawer[0]:
                             user[1].send(('draw;'+self.word).encode())
+                            #  opening a thread that deals with the drawer.
                             drawer_thread = threading.Thread(target=self.handle_drawer, args=(user[1],))
                             drawer_thread.start()
-                            # self.handle_drawer(self.online_players, user[1])
+                            threads_lst.append(drawer_thread)
                         else:
                             user[1].send(('guess;'+self.word).encode())
-                            guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1], drawer[1]))
+                            #  opening a thread that deals with the guesser.
+                            guess_thread = threading.Thread(target=self.handle_guesser, args=(user[1], drawer[1], len(self.online_players)))
                             guess_thread.start()
-                            # self.handle_guesser(user[1])
-                    time.sleep(80)
+                            threads_lst.append(guess_thread)
+                    finish_loop_for_next_round = True
+                    while finish_loop_for_next_round:
+                        finish_loop_for_next_round = self.if_round_over(threads_lst, 0)
+                    # time.sleep(80)
+
+    def if_round_over(self, thread_lst, position):
+        if position == len(thread_lst)-1:
+            return thread_lst[position].isAlive()
+        return thread_lst[position].isAlive() or self.if_round_over(thread_lst, position+1)
 
     def choose_word(self):
         """
@@ -158,14 +170,20 @@ class Server(object):
         return random.choice(self.list_of_words)
 
     def handle_drawer(self, client_socket):
-        # print(len(self.list_all_clients))
         finish = False
         while not finish:
+            if len(self.gussed_correctly) + 1 == len(self.online_players):
+                #finish = True
+                client_socket.send("end;".encode())
             try:
-                request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client,
+                #  requesting the coordinates from the drawer.
+                request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client.
+                print("req", request)
+                #  sending the coordinates to all players.
                 for i in self.online_players:
                     i[1].send(request.encode())
             except ConnectionResetError:
+                #  in case the drawer is disconnecting during the game.
                 finish = True
                 for i in self.online_players:
                     if i[1] == client_socket:
@@ -174,7 +192,13 @@ class Server(object):
                     if j[1] == client_socket:
                         self.online_users.remove(j)
 
-    def handle_guesser(self, guesser_socket, drawer_socket):
+    def handle_guesser(self, guesser_socket, drawer_socket, how_many_players):
+        """
+
+        :param guesser_socket:
+        :param drawer_socket:
+        :return:
+        """
         print("handling guesser")
         finish = False
         # while not finish:
@@ -204,6 +228,12 @@ class Server(object):
                 for j in self.online_users:
                     if j[1] == guesser_socket:
                         self.online_users.remove(j)
+            # if len(self.gussed_correctly) + 1 == how_many_players:
+            #     #  if everyone guessed.
+            #     guesser_socket.send("end".encode())
+            #     finish = False
+            # else:
+            #     guesser_socket.send("continue".encode())
 
 
 if __name__ == '__main__':

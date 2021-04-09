@@ -13,6 +13,7 @@ from screendraft import Screen
 
 class Surface:
     def __init__(self, ip, port):
+
         """
         constructor. initializing variables of the class.
         building the socket, connecting to server, the main function.
@@ -77,8 +78,6 @@ class Surface:
         info_button.photo = info_img
         info_button.place(x=850, y=50)
 
-        # tk.mainloop()  # last line
-
     def info_screen(self):
         """
         creating the screen that will open after pressing the info button, with directions how to play.
@@ -131,7 +130,7 @@ class Surface:
         creating the screen that will open after pressing the log in button, with option to log in to the game.
         :return:
         """
-        #self.clear_screen()
+        #  self.clear_screen()
         self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Log In Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
@@ -192,7 +191,7 @@ class Surface:
                                 message="username or password are wrong, or user already connected.")
             self.login_screen()
         else:
-            messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
+            # messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
             self.waiting_screen()
 
     def register_screen(self):
@@ -288,10 +287,14 @@ class Surface:
             self.clear_screen()
             self.waiting_screen()
         else:  #
-            messagebox.showinfo(title="Registration failed.", message="try again.")
+            # messagebox.showinfo(title="Registration failed.", message="try again.")
             self.register_screen()
 
     def waiting_screen(self):
+        """
+        the window that accurs until the game starting.
+        :return:
+        """
         #  self.clear_screen()
         self.root.title("Drawing & Guessing Game- Waiting Window")  # caption of the window
         img = tk.PhotoImage(file='draw-and-guess.png')
@@ -307,6 +310,10 @@ class Surface:
         # self.root.mainloop()
 
     def play_screen(self):
+        """
+
+        :return:
+        """
         # print("im in play screen")
         play_sign = self.sock.recv(4).decode()
         print(play_sign)
