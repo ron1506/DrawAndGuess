@@ -7,8 +7,10 @@ import time
 class Screen:
     def __init__(self, sock, username):
         self.color = 'black'
+        self.game_number = 1
         self.strikes = 3
         self.score = 0
+        self.to_stop = False
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
@@ -25,7 +27,8 @@ class Screen:
         in the start of every round.
         :return:
         """
-        for i in range(3):
+        if self.game_number < 3:
+            self.game_number += 1
             self.strikes = 3
             mode = self.server_socket.recv(1024).decode()
             print(mode)
@@ -41,9 +44,9 @@ class Screen:
         the screen of the drawer.
         :return:
         """
-        time_thread = threading.Thread(target=self.timer)  # starting a timer
-        time_thread.daemon = True
-        time_thread.start()
+        timer_thread = threading.Thread(target=self.timer)  # starting a timer
+        timer_thread.daemon = True
+        timer_thread.start()
         headline = Label(self.root2, text=self.username)  # the name of the user on top of the screen.
         headline.pack()
         print("word = ", self.word)
@@ -68,9 +71,9 @@ class Screen:
         self.root2.mainloop()
 
     def guess_mode(self):
-        time_thread = threading.Thread(target=self.timer)  # starting a timer
-        time_thread.daemon = True
-        time_thread.start()
+        timer_thread = threading.Thread(target=self.timer)  # starting a timer
+        timer_thread.daemon = True
+        timer_thread.start()
 
         print("into guess mode")
         headline = Label(self.root2, text=self.username)  # the name of the user on top of the screen.
@@ -116,13 +119,13 @@ class Screen:
             self.guess_mode()
 
     def timer(self, seconds=80):
-        if seconds >= 0:
-            timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
-            timer_label.place(x=235, y=40)
-            self.root2.after(1000, lambda: self.timer(seconds-1))
-        else:
+        if seconds <= 0 or self.to_stop:
             self.server_socket.send('end'.encode())
             self.every_game()
+        else:
+            timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
+            timer_label.place(x=235, y=40)
+            self.root2.after(1000, lambda: self.timer(seconds - 1))
 
     def send_coordinates(self, event):
 
@@ -147,24 +150,30 @@ class Screen:
             x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
             pos = x_and_y.split(";")  # separating x and y
             print("pos ", pos)
-            try:
-                for i in range(0, len(pos)-2, 2):
-                    x = int(pos[i])
-                    y = int(pos[i + 1])
-                    print("recv: ", x, y)
-                    self.x, self.y = x, y
-                    x2, y2 = (x + 1), (y + 1)
-                    self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
-            except ConnectionResetError:
-                print("user disconnected")
             if pos[0] == 'score':
                 print("score was received")
                 self.score += int(pos[1])
                 score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
                                        bg='white', fg="black", relief="solid")
                 score_headline.place(x=10, y=50)
+            elif pos[0] == 'end':
+                if mode == "draw":
+                    self.cv.unbind('<B1-Motion>')
+                finish = True
+                self.to_stop = True
+                self.every_round()
             else:
-                pass
+                try:
+                    for i in range(0, len(pos)-2, 2):
+                        x = int(pos[i])
+                        y = int(pos[i + 1])
+                        print("recv: ", x, y)
+                        self.x, self.y = x, y
+                        x2, y2 = (x + 1), (y + 1)
+                        self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
+                except ConnectionResetError:
+                    print("user disconnected")
+
                 # print("VE", pos)
                 # if pos[0] == 'end':
                 #     if mode == 'draw':
@@ -172,7 +181,6 @@ class Screen:
                 #         # self.cv.unbind('<B1-Motion>')
                 #     # finish = True
                 # else:
-        self.root2.mainloop()
         # painting the screen in the coordinates.
         # print("other mouse position: (%s %s)" % (x, y))
 

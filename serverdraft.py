@@ -127,7 +127,7 @@ class Server(object):
         """
         finish = False
         while not finish:
-            if len(self.online_users) >= 2:
+            if len(self.online_users) >= 3:
                 for i in range(len(self.online_users)):  # 80 sec
                     finish = True
                     self.online_players = self.online_users[:]
@@ -155,6 +155,7 @@ class Server(object):
                     finish_loop_for_next_round = True
                     while finish_loop_for_next_round:
                         finish_loop_for_next_round = self.if_round_over(threads_lst, 0)
+                    print("round ended")
                     # time.sleep(80)
 
     def if_round_over(self, thread_lst, position):
@@ -173,7 +174,7 @@ class Server(object):
         finish = False
         while not finish:
             if len(self.gussed_correctly) + 1 == len(self.online_players):
-                #finish = True
+                finish = True
                 client_socket.send("end;".encode())
             try:
                 #  requesting the coordinates from the drawer.
@@ -206,6 +207,9 @@ class Server(object):
         number_guesses = 0
         while not did_guess and number_guesses < 3 and not finish:
             print("I am in loop")
+            if len(self.gussed_correctly) + 1 == len(self.online_players):
+                finish = True
+                guesser_socket.send("end;".encode())
             try:
                 request = guesser_socket.recv(1024).decode()  # if guessed correctly or not
                 number_guesses += 1
