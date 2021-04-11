@@ -128,11 +128,11 @@ class Server(object):
         finish = False
         while not finish:
             if len(self.online_users) >= 3:
-                for i in range(len(self.online_users)):  # 80 sec
-                    finish = True
-                    self.online_players = self.online_users[:]
+                finish = True
+                self.online_players = self.online_users[:]
+                for i in range(len(self.online_players)):  # 80 sec
                     print("lets play")
-                    drawer = self.online_players[random.choice([i for i in range(len(self.online_players))])]
+                    drawer = random.choice(self.online_players)
                     #   choosing the drawer, tuple (username,socket)
                     for player in self.online_players:  # sending playing authorising to all players.
                         player[1].send("play".encode())
@@ -154,14 +154,22 @@ class Server(object):
                             threads_lst.append(guess_thread)
                     finish_loop_for_next_round = True
                     while finish_loop_for_next_round:
-                        finish_loop_for_next_round = self.if_round_over(threads_lst, 0)
+                        #  at least one thread works
+                        finish_loop_for_next_round = self.if_round_still_going(threads_lst, 0)
                     print("round ended")
+                    self.gussed_correctly = []
                     # time.sleep(80)
 
-    def if_round_over(self, thread_lst, position):
+    def if_round_still_going(self, thread_lst, position):
+        """
+        checking if the threads atill runs.
+        :param thread_lst:
+        :param position:
+        :return:
+        """
         if position == len(thread_lst)-1:
             return thread_lst[position].isAlive()
-        return thread_lst[position].isAlive() or self.if_round_over(thread_lst, position+1)
+        return thread_lst[position].isAlive() or self.if_round_still_going(thread_lst, position+1)
 
     def choose_word(self):
         """
@@ -215,14 +223,13 @@ class Server(object):
                 number_guesses += 1
                 print(request)
                 lst = request.split(";")
+                self.gussed_correctly.append(lst[1])
                 if lst[0] == 'True':
-                    self.gussed_correctly.append(lst[1])
                     score = (3 - len(self.gussed_correctly)) * 25
                     guesser_socket.send(('score;' + str(score)).encode())
                     drawer_socket.send(('score;' + str(30)).encode())
                     did_guess = True
-                else:
-                    guesser_socket.send(('score;' + str(0)).encode())
+
             except ConnectionResetError:
                 print("an error occurred")
                 finish = True

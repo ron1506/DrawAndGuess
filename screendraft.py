@@ -14,11 +14,13 @@ class Screen:
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
+        self.cv.bind('<B1-Motion>', self.send_coordinates)
         self.root2.resizable(width=FALSE, height=FALSE)
         self.x = 0  # initializing coordinates.
         self.y = 0  # initializing coordinates.
         self.server_socket = sock
         self.word = ""
+        self.mode = ""
         self.every_round()
         self.root2.mainloop()
 
@@ -27,14 +29,14 @@ class Screen:
         in the start of every round.
         :return:
         """
-        if self.game_number < 3:
+        if self.game_number <= 3:
+            self.clear_screen()
             self.game_number += 1
             self.strikes = 3
             mode = self.server_socket.recv(1024).decode()
             print(mode)
-            who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            self.word = word_chosen
-            if who_am_i == "draw":  # the drawer
+            self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
+            if self.mode == "draw":  # the drawer
                 self.draw_mode()
             else:  # the guesser
                 self.guess_mode()
@@ -62,9 +64,9 @@ class Screen:
         score_headline.place(x=10, y=50)
 
         # if left button on the mouse is being clicked, it goes to the function 'send_coordinates '.
-        self.cv.bind('<B1-Motion>', self.send_coordinates)
+        # self.cv.bind('<B1-Motion>', self.send_coordinates)
         self.cv.pack(expand=YES, fill=BOTH)
-        server_handler = threading.Thread(target=self.paint, args=('draw',))
+        server_handler = threading.Thread(target=self.paint)
         server_handler.daemon = True
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
@@ -93,7 +95,7 @@ class Screen:
                                font=('cooper black', 10), fg="black", bg="#%02x%02x%02x" % (255, 255, 255),
                                command=lambda: self.check_guess(guess, submit_button))
         submit_button.place(x=400, y=400)
-        server_handler = threading.Thread(target=self.paint, args=('guess',))
+        server_handler = threading.Thread(target=self.paint)
         server_handler.daemon = True
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
@@ -104,28 +106,39 @@ class Screen:
         in the start of every round.
         :return:
         """
-        play_sign = self.server_socket.recv(4).decode()
-        print(play_sign)
-        print("root destroyed in the mall")
-        self.clear_screen()
-        self.strikes = 3
-        mode = self.server_socket.recv(1024).decode()
-        print(mode)
-        who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-        self.word = word_chosen
-        if who_am_i == "draw":
-            self.draw_mode()
-        else:
-            self.guess_mode()
+        if self.game_number <= 3:
+            play_sign = self.server_socket.recv(4).decode()  # play
+            print(play_sign)
+            print("root destroyed in the mall")
+            self.clear_screen()
+            self.strikes = 3
+            self.to_stop = False
+
+            mode = self.server_socket.recv(1024).decode()
+            print(mode)
+            self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
+            paint_thread = threading.Thread(target=self.paint)
+            paint_thread.daemon = True
+            paint_thread.start()
+            self.word = self.word
+            if self.mode == "draw":
+                self.draw_mode()
+            else:
+                self.guess_mode()
 
     def timer(self, seconds=80):
-        if seconds <= 0 or self.to_stop:
-            self.server_socket.send('end'.encode())
-            self.every_game()
-        else:
-            timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
-            timer_label.place(x=235, y=40)
-            self.root2.after(1000, lambda: self.timer(seconds - 1))
+        try:
+            if seconds <= 0 or self.to_stop:
+                self.server_socket.send(('end;'+self.username).encode())
+                self.every_game()
+            else:
+                timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
+                timer_label.place(x=235, y=40)
+                self.root2.after(1000, lambda: self.timer(seconds - 1))
+        except:
+            print("there is no canvas, the screen is blank")
+            next_round_label = Label(self.root2, text="next round starts in a bit", font=('bubble', 15))
+            next_round_label.pack(padx=50, pady=20, side=TOP)
 
     def send_coordinates(self, event):
 
@@ -134,12 +147,13 @@ class Screen:
         :param event: when clicking the left button an event is created contains the coordinates of the place.
         :return:
         """
-        self.x, self.y = event.x, event.y
-        x_and_y = str(self.x) + ";" + str(self.y) + ";"
-        print("send: ", x_and_y)
-        self.server_socket.send(x_and_y.encode())  # sending the server the coordinates.
+        if not self.to_stop and self.mode == "draw":
+            self.x, self.y = event.x, event.y
+            x_and_y = str(self.x) + ";" + str(self.y) + ";"
+            print("send: ", x_and_y)
+            self.server_socket.send(x_and_y.encode())  # sending the server the coordinates.
 
-    def paint(self, mode):
+    def paint(self):
         """
         receiving coordinates from server and painting the screen in black in them.
         :return:
@@ -157,11 +171,8 @@ class Screen:
                                        bg='white', fg="black", relief="solid")
                 score_headline.place(x=10, y=50)
             elif pos[0] == 'end':
-                if mode == "draw":
-                    self.cv.unbind('<B1-Motion>')
                 finish = True
                 self.to_stop = True
-                self.every_round()
             else:
                 try:
                     for i in range(0, len(pos)-2, 2):
@@ -173,6 +184,10 @@ class Screen:
                         self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
                 except ConnectionResetError:
                     print("user disconnected")
+                # except ValueError:
+                #     if pos[-1] == 'play':
+                #         finish = True
+                #         self.to_stop = True
 
                 # print("VE", pos)
                 # if pos[0] == 'end':
@@ -221,12 +236,19 @@ class Screen:
             # if self.server_socket.recv(1024).decode() == "end":  # if everyone guessed already
             #     pass
         else:
-            self.server_socket.send(('False;' + self.username).encode())
             self.strikes -= 1
             you_guessed_wrongfully = Label(self.root2, text=' you guessed the word incorrectly!!', font=('bubble', 15),
                                      bg='white', fg="red", relief="solid")
             you_guessed_wrongfully.place(x=150, y=200)
             you_guessed_wrongfully.after(1500, you_guessed_wrongfully.destroy)
+            if self.strikes == 0:  # used all of his strikes
+                self.server_socket.send(('False;' + self.username).encode())
+                round_finish_label = Label(self.root2, text="ROUND IS OVER", font=('bubble', 25))
+                round_finish_label.place(x=100, y=100)
+                guess.destroy()
+                submit_button.destroy()
+            # else:
+                # self.server_socket.send('False;1'.encode())
             strikes_headline = Label(self.root2, text='strikes: ' + str(self.strikes), font=('bubble', 15),
                                      bg='white', fg="black", relief="solid")  # the strikes the user have left.
             strikes_headline.place(x=10, y=20)
