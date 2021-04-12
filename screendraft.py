@@ -5,13 +5,16 @@ import time
 
 
 class Screen:
-    def __init__(self, sock, username):
+    def __init__(self, sock, username, root2=None, score=0, game_number=1):
         self.color = 'black'
-        self.game_number = 1
+        self.game_number = game_number
         self.strikes = 3
-        self.score = 0
+        self.score = score
         self.to_stop = False
-        self.root2 = Tk()
+        if root2 == None:
+            self.root2 = Tk()
+        else:
+            self.root2 = root2
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
         self.cv.bind('<B1-Motion>', self.send_coordinates)
@@ -21,7 +24,10 @@ class Screen:
         self.server_socket = sock
         self.word = ""
         self.mode = ""
-        self.every_round()
+        if self.game_number == 1:
+            self.every_round()
+        else:
+            self.every_game()
         self.root2.mainloop()
 
     def every_round(self):
@@ -30,7 +36,7 @@ class Screen:
         :return:
         """
         if self.game_number <= 3:
-            self.clear_screen()
+            # self.clear_screen()
             self.game_number += 1
             self.strikes = 3
             mode = self.server_socket.recv(1024).decode()
@@ -40,6 +46,9 @@ class Screen:
                 self.draw_mode()
             else:  # the guesser
                 self.guess_mode()
+        else:
+            #  game ended
+            pass
 
     def draw_mode(self):
         """
@@ -130,7 +139,8 @@ class Screen:
         try:
             if seconds <= 0 or self.to_stop:
                 self.server_socket.send(('end;'+self.username).encode())
-                self.every_game()
+                self.root2.destroy()
+                # self.__init__(self.server_socket, self.username, self.root2, self.score, self.game_number+1)
             else:
                 timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
                 timer_label.place(x=235, y=40)
