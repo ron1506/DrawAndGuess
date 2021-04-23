@@ -83,6 +83,7 @@ class Surface:
         creating the screen that will open after pressing the info button, with directions how to play.
         :return: nothing.
         """
+        self.clear_screen()
         instructions = """The game is a multiplayer game in which \n 
                     each user registers by creating a new player \n
                     or by connecting to an existing player (what makes \n 
@@ -130,7 +131,7 @@ class Surface:
         creating the screen that will open after pressing the log in button, with option to log in to the game.
         :return:
         """
-        #  self.clear_screen()
+        self.clear_screen()
         self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Log In Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
@@ -199,7 +200,7 @@ class Surface:
         creating the screen that will open after pressing the log in button, with option to log in to the game.
         :return:
         """
-        #self.clear_screen()
+        #  self.clear_screen()
         self.root.geometry("943x600+100+30")  # size: 943x600, Location: (100, 30)
         self.root.title("Drawing & Guessing Game- Registration Window")  # caption of the window
         self.root.resizable(width=tk.FALSE, height=tk.FALSE)
@@ -282,6 +283,7 @@ class Surface:
         print(msg)
         self.sock.send(msg.encode())
         if_ok = self.sock.recv(1024).decode()  # 'true' if managed to register and 'false' otherwise.
+
         if if_ok == 'True':  # managed to register.
             messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
             self.clear_screen()
@@ -307,6 +309,7 @@ class Surface:
         thread_wait_for_instructions = threading.Thread(target=self.play_screen)
         # thread_wait_for_instructions.daemon = True
         thread_wait_for_instructions.start()
+
         # self.root.mainloop()
 
     def play_screen(self):
@@ -333,6 +336,7 @@ class Surface:
         lst1 = self.root.place_slaves()
         for j in lst1:
             j.destroy()
+        print("in clear screen")
 
 
 def main():

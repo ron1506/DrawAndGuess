@@ -139,8 +139,10 @@ class Screen:
         try:
             if seconds <= 0 or self.to_stop:
                 self.server_socket.send(('end;'+self.username).encode())
-                self.root2.destroy()
-                # self.__init__(self.server_socket, self.username, self.root2, self.score, self.game_number+1)
+                # self.root2.destroy()
+                new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
+                new_thread.start()
+                #  self.__init__(self.server_socket, self.username, self.root2, self.score, self.game_number+1)
             else:
                 timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
                 timer_label.place(x=235, y=40)
@@ -246,6 +248,8 @@ class Screen:
             # if self.server_socket.recv(1024).decode() == "end":  # if everyone guessed already
             #     pass
         else:
+            guess.delete(0, 'end')
+
             self.strikes -= 1
             you_guessed_wrongfully = Label(self.root2, text=' you guessed the word incorrectly!!', font=('bubble', 15),
                                      bg='white', fg="red", relief="solid")
