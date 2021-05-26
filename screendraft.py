@@ -5,16 +5,15 @@ import time
 
 
 class Screen:
-    def __init__(self, sock, username, root2=None, score=0, game_number=1):
+    def __init__(self, sock, username, score=0, game_number=1):
+        self.time_is_up = False
         self.color = 'black'
+        self.can_draw = False
         self.game_number = game_number
         self.strikes = 3
         self.score = score
         self.to_stop = False
-        if root2 == None:
-            self.root2 = Tk()
-        else:
-            self.root2 = root2
+        self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
         self.cv.bind('<B1-Motion>', self.send_coordinates)
@@ -24,37 +23,32 @@ class Screen:
         self.server_socket = sock
         self.word = ""
         self.mode = ""
-        if self.game_number == 1:
-            self.every_round()
-        else:
-            self.every_game()
+        self.every_round()
         self.root2.mainloop()
 
     def every_round(self):
         """
-        in the start of every round.
+        in the start of the first round.
         :return:
         """
-        if self.game_number <= 3:
+        # if self.game_number <= 3:
             # self.clear_screen()
-            self.game_number += 1
-            self.strikes = 3
-            mode = self.server_socket.recv(1024).decode()
-            print(mode)
-            self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            if self.mode == "draw":  # the drawer
-                self.draw_mode()
-            else:  # the guesser
-                self.guess_mode()
-        else:
-            #  game ended
-            pass
+        self.game_number += 1
+        # self.strikes = 3
+        mode = self.server_socket.recv(1024).decode()
+        print(mode)
+        self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
+        if self.mode == "draw":  # the drawer
+            self.draw_mode()
+        else:  # the guesser
+            self.guess_mode()
 
     def draw_mode(self):
         """
         the screen of the drawer.
         :return:
         """
+        self.can_draw = True
         timer_thread = threading.Thread(target=self.timer)  # starting a timer
         timer_thread.daemon = True
         timer_thread.start()
@@ -82,6 +76,7 @@ class Screen:
         self.root2.mainloop()
 
     def guess_mode(self):
+        self.can_draw = True
         timer_thread = threading.Thread(target=self.timer)  # starting a timer
         timer_thread.daemon = True
         timer_thread.start()
@@ -116,41 +111,42 @@ class Screen:
         :return:
         """
         if self.game_number <= 3:
-            play_sign = self.server_socket.recv(4).decode()  # play
-            print(play_sign)
-            print("root destroyed in the mall")
-            self.clear_screen()
-            self.strikes = 3
-            self.to_stop = False
-
-            mode = self.server_socket.recv(1024).decode()
-            print(mode)
-            self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
-            paint_thread = threading.Thread(target=self.paint)
-            paint_thread.daemon = True
-            paint_thread.start()
-            self.word = self.word
+            # play_sign = self.server_socket.recv(4).decode()  # play
+            # print(play_sign)
+            # self.game_number += 1
+            # mode = self.server_socket.recv(1024).decode()
+            # print(mode)
+            # self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
             if self.mode == "draw":
                 self.draw_mode()
             else:
                 self.guess_mode()
+        else:
+            pass
 
-    def timer(self, seconds=80):
+    def timer(self, seconds=10):
         try:
-            if seconds <= 0 or self.to_stop:
-                self.server_socket.send(('end;'+self.username).encode())
-                # self.root2.destroy()
-                new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
-                new_thread.start()
-                #  self.__init__(self.server_socket, self.username, self.root2, self.score, self.game_number+1)
+            if self.to_stop or seconds <= 0:  # if the time is up or everyone already guessed.
+                # self.server_socket.send(('end;'+self.username).encode())
+                next_round_label = Label(self.root2, text="next round starts in a bit", font=('bubble', 15))
+                next_round_label.pack(padx=50, pady=20, side=TOP)
+                if not self.to_stop:
+                    self.server_socket.send('end;'.encode())
+                self.to_stop = True
+                self.restart()
+                # self.timer(seconds)
             else:
                 timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
                 timer_label.place(x=235, y=40)
                 self.root2.after(1000, lambda: self.timer(seconds - 1))
         except:
             print("there is no canvas, the screen is blank")
-            next_round_label = Label(self.root2, text="next round starts in a bit", font=('bubble', 15))
-            next_round_label.pack(padx=50, pady=20, side=TOP)
+            self.timer(0)
+            # self.clear_screen()
+            # next_round_label = Label(self.root2, text="next round starts in a bit", font=('bubble', 15))
+            # next_round_label.pack(padx=50, pady=20, side=TOP)
+            # self.to_stop = True
+            # self.root2.after(5000, self.restart())
 
     def send_coordinates(self, event):
 
@@ -165,14 +161,31 @@ class Screen:
             print("send: ", x_and_y)
             self.server_socket.send(x_and_y.encode())  # sending the server the coordinates.
 
+    def restart(self):
+        print("restarting")
+        self.clear_screen()
+        print("after")
+        self.can_draw = False
+        self.game_number = self.game_number + 1
+        self.score = self.score
+        # self.to_stop = False
+        self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.
+        print("created canvas")
+        self.cv.bind('<B1-Motion>', self.send_coordinates)
+        self.root2.resizable(width=FALSE, height=FALSE)
+        self.x = 0  # initializing coordinates.
+        self.y = 0  # initializing coordinates.
+        self.word = ""
+        self.mode = ""
+        self.every_game()
+
     def paint(self):
         """
         receiving coordinates from server and painting the screen in black in them.
         :return:
         """
         print("paint is in process")
-        finish = False
-        while not finish:
+        while not self.to_stop:
             x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
             pos = x_and_y.split(";")  # separating x and y
             print("pos ", pos)
@@ -183,17 +196,27 @@ class Screen:
                                        bg='white', fg="black", relief="solid")
                 score_headline.place(x=10, y=50)
             elif pos[0] == 'end':
-                finish = True
+                print("got end")
                 self.to_stop = True
+                # self.restart()
+                # new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
+                # new_thread.start()
+                # self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1)
+            elif pos[0] == 'drawer' or pos[0] == 'guesser':
+                self.mode, self.word = x_and_y.split(";")  # who_am_i: either a 'draw' or 'guess'
             else:
                 try:
-                    for i in range(0, len(pos)-2, 2):
-                        x = int(pos[i])
-                        y = int(pos[i + 1])
-                        print("recv: ", x, y)
-                        self.x, self.y = x, y
-                        x2, y2 = (x + 1), (y + 1)
-                        self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
+                    if self.can_draw:
+                        for i in range(0, len(pos)-2, 2):
+                            x = int(pos[i])
+                            y = int(pos[i + 1])
+                            print("recv: ", x, y)
+                            self.x, self.y = x, y
+                            x2, y2 = (x + 1), (y + 1)
+                            self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
+                except TclError:
+                    print("canvas was deleted")
+                    self.to_stop = True
                 except ConnectionResetError:
                     print("user disconnected")
                 # except ValueError:
@@ -223,6 +246,7 @@ class Screen:
         thread_cg.start()
 
     def check_guess1(self, guess, submit_button):
+
         """
         checking the guess of the guesser.
         :param guess:
@@ -233,6 +257,7 @@ class Screen:
         print("word", self.word)
         print("guess", guess.get())
         if guess.get() == self.word:
+            print("noderrrrrrrrrrrrrrr")
             self.server_socket.send(('True;' + self.username).encode())
             # self.cv.delete("all")
             # saying that the game has ended.
@@ -261,8 +286,6 @@ class Screen:
                 round_finish_label.place(x=100, y=100)
                 guess.destroy()
                 submit_button.destroy()
-            # else:
-                # self.server_socket.send('False;1'.encode())
             strikes_headline = Label(self.root2, text='strikes: ' + str(self.strikes), font=('bubble', 15),
                                      bg='white', fg="black", relief="solid")  # the strikes the user have left.
             strikes_headline.place(x=10, y=20)

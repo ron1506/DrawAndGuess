@@ -9,6 +9,7 @@ import threading
 from tkinter import messagebox
 from pickle import loads
 from screendraft import Screen
+import hashlib
 
 
 class Surface:
@@ -17,8 +18,8 @@ class Surface:
         """
         constructor. initializing variables of the class.
         building the socket, connecting to server, the main function.
-        :param ip:
-        :param port:
+        :param ip: string
+        :param port: int
         """
         self.ip = ip
         self.port = port
@@ -177,13 +178,14 @@ class Surface:
 
     def submit_log_in(self, username, password):
         """
-        :param username:
-        :param password:
+        deals with the log in, sends the info to the server, and accept if the player exists.
+        :param username: string
+        :param password: string
         :return:
         """
         self.username = username.get()
         self.password = password.get()
-        msg = "login;" + self.username + ";" + self.password + ";" + str(self.sock)
+        msg = "login;" + self.username + ";" + self.password_encryption(self.password) + ";" + str(self.sock)
         self.sock.send(msg.encode())
         is_ok = self.sock.recv(1024).decode()
         print("thats what i get: ", is_ok)
@@ -192,7 +194,6 @@ class Surface:
                                 message="username or password are wrong, or user already connected.")
             self.login_screen()
         else:
-            # messagebox.showinfo(title="Log in went successfully.", message="welcome to 'draw and guess'.")
             self.waiting_screen()
 
     def register_screen(self):
@@ -262,10 +263,11 @@ class Surface:
 
     def submit_register(self, username, password, confirm_password, email_address):
         """
-        :param username:
-        :param password:
-        :param confirm_password:
-        :param email_address:
+        deals with the registering process, sends the info to the server, and accept if the player doesn't exists.
+        :param username: string
+        :param password: string
+        :param confirm_password: string
+        :param email_address: string
         :return:
         """
         self.username = username.get()
@@ -279,13 +281,13 @@ class Surface:
         if ('@' not in self.email_address) or ('.com' not in self.email_address):
             messagebox.showinfo(title="Invalid Email address", message="Must contain '@' and '.com'")
             self.register_screen()
-        msg = "register;" + self.username + ";" + self.password + ";" + self.email_address
+        msg = "register;" + self.username + ";" + self.password_encryption(self.password) + ";" + self.email_address
         print(msg)
         self.sock.send(msg.encode())
         if_ok = self.sock.recv(1024).decode()  # 'true' if managed to register and 'false' otherwise.
 
         if if_ok == 'True':  # managed to register.
-            messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
+            # messagebox.showinfo(title="Registration went successfully.", message="welcome to 'draw and guess'.")
             self.clear_screen()
             self.waiting_screen()
         else:  #
@@ -294,7 +296,7 @@ class Surface:
 
     def waiting_screen(self):
         """
-        the window that accurs until the game starting.
+        the window that shows up until the game starting.
         :return:
         """
         #  self.clear_screen()
@@ -314,22 +316,19 @@ class Surface:
 
     def play_screen(self):
         """
-
+        the 'brigde' between the waiting screen the actual game screen.
         :return:
         """
-        # print("im in play screen")
         play_sign = self.sock.recv(4).decode()
         print(play_sign)
         self.root.after(0, self.root.destroy)
-        print("root destroyed in the mall")
-        # score = 0
-        # for i in range(2):
-        #     mode = self.sock.recv(1024).decode()
-        #     print(mode)
-        #     who_am_i, word_chosen = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
         s = Screen(self.sock, self.username)
 
     def clear_screen(self):
+        """
+        clears the screen, the screen turns blank.
+        :return:
+        """
         lst = self.root.pack_slaves()
         for i in lst:
             i.destroy()
@@ -337,6 +336,15 @@ class Surface:
         for j in lst1:
             j.destroy()
         print("in clear screen")
+
+    def password_encryption(self, password):
+        """
+        encryptes the password by hash function.
+        :param password: string
+        :return:
+        """
+        encrypted_pass = hashlib.sha256(str.encode(password)).hexdigest()
+        return encrypted_pass
 
 
 def main():
