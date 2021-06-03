@@ -7,7 +7,6 @@ import socket
 import tkinter as tk
 import threading
 from tkinter import messagebox
-from pickle import loads
 from screendraft import Screen
 import hashlib
 

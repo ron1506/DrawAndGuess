@@ -69,8 +69,7 @@ class Screen:
         # if left button on the mouse is being clicked, it goes to the function 'send_coordinates '.
         # self.cv.bind('<B1-Motion>', self.send_coordinates)
         self.cv.pack(expand=YES, fill=BOTH)
-        server_handler = threading.Thread(target=self.paint)
-        server_handler.daemon = True
+        server_handler = threading.Thread(target=self.paint, daemon=True)
         # creating a thread that handles with the data the server sends to the client, w function 'paint'.
         server_handler.start()
         self.root2.mainloop()
@@ -113,10 +112,10 @@ class Screen:
         if self.game_number <= 3:
             # play_sign = self.server_socket.recv(4).decode()  # play
             # print(play_sign)
-            # self.game_number += 1
-            # mode = self.server_socket.recv(1024).decode()
-            # print(mode)
-            # self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
+            self.game_number += 1
+            mode = self.server_socket.recv(1024).decode()
+            print(mode)
+            self.mode, self.word = mode.split(";")   # who_am_i: either a 'draw' or 'guess'
             if self.mode == "draw":
                 self.draw_mode()
             else:
@@ -124,7 +123,7 @@ class Screen:
         else:
             pass
 
-    def timer(self, seconds=10):
+    def timer(self, seconds=150):
         try:
             if self.to_stop or seconds <= 0:  # if the time is up or everyone already guessed.
                 # self.server_socket.send(('end;'+self.username).encode())
@@ -186,7 +185,10 @@ class Screen:
         """
         print("paint is in process")
         while not self.to_stop:
+            print("trying to recv")
             x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
+            print(x_and_y)
+            print("recvd")
             pos = x_and_y.split(";")  # separating x and y
             print("pos ", pos)
             if pos[0] == 'score':
@@ -202,7 +204,9 @@ class Screen:
                 # new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
                 # new_thread.start()
                 # self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1)
-            elif pos[0] == 'drawer' or pos[0] == 'guesser':
+            elif pos[0] == 'draw' or pos[0] == 'guess':
+                print("noderet recvd mode")
+                self.to_stop = True
                 self.mode, self.word = x_and_y.split(";")  # who_am_i: either a 'draw' or 'guess'
             else:
                 try:
