@@ -132,12 +132,15 @@ class Screen:
                 if not self.to_stop:
                     self.server_socket.send('end;'.encode())
                 self.to_stop = True
-                self.restart()
+                self.root2.destroy()
+
+                # self.restart()
                 # self.timer(seconds)
             else:
                 timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
                 timer_label.place(x=235, y=40)
                 self.root2.after(1000, lambda: self.timer(seconds - 1))
+
         except:
             print("there is no canvas, the screen is blank")
             self.timer(0)
@@ -186,43 +189,46 @@ class Screen:
         print("paint is in process")
         while not self.to_stop:
             print("trying to recv")
-            x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.
-            print(x_and_y)
-            print("recvd")
-            pos = x_and_y.split(";")  # separating x and y
-            print("pos ", pos)
-            if pos[0] == 'score':
-                print("score was received")
-                self.score += int(pos[1])
-                score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
-                                       bg='white', fg="black", relief="solid")
-                score_headline.place(x=10, y=50)
-            elif pos[0] == 'end':
-                print("got end")
-                self.to_stop = True
-                # self.restart()
-                # new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
-                # new_thread.start()
-                # self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1)
-            elif pos[0] == 'draw' or pos[0] == 'guess':
-                print("noderet recvd mode")
-                self.to_stop = True
-                self.mode, self.word = x_and_y.split(";")  # who_am_i: either a 'draw' or 'guess'
-            else:
-                try:
-                    if self.can_draw:
-                        for i in range(0, len(pos)-2, 2):
-                            x = int(pos[i])
-                            y = int(pos[i + 1])
-                            print("recv: ", x, y)
-                            self.x, self.y = x, y
-                            x2, y2 = (x + 1), (y + 1)
-                            self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
-                except TclError:
-                    print("canvas was deleted")
+            try:
+                x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.\
+                print(x_and_y)
+                print("recvd")
+                pos = x_and_y.split(";")  # separating x and y
+                print("pos ", pos)
+                if pos[0] == 'score':
+                    print("score was received")
+                    self.score += int(pos[1])
+                    score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
+                                           bg='white', fg="black", relief="solid")
+                    score_headline.place(x=10, y=50)
+                elif pos[0] == 'end':
+                    print("got end")
                     self.to_stop = True
-                except ConnectionResetError:
-                    print("user disconnected")
+                    # self.restart()
+                    # new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
+                    # new_thread.start()
+                    # self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1)
+                elif pos[0] == 'draw' or pos[0] == 'guess':
+                    print("noderet recvd mode")
+                    self.to_stop = True
+                    self.mode, self.word = x_and_y.split(";")  # who_am_i: either a 'draw' or 'guess'
+                else:
+                    try:
+                        if self.can_draw:
+                            for i in range(0, len(pos)-2, 2):
+                                x = int(pos[i])
+                                y = int(pos[i + 1])
+                                print("recv: ", x, y)
+                                self.x, self.y = x, y
+                                x2, y2 = (x + 1), (y + 1)
+                                self.cv.create_oval((self.x, self.y, x2, y2), fill='black', width=5)
+                    except TclError:
+                        print("canvas was deleted")
+                        self.to_stop = True
+                    except ConnectionResetError:
+                        print("user disconnected")
+            except:
+                print('an error ecourred')
                 # except ValueError:
                 #     if pos[-1] == 'play':
                 #         finish = True
@@ -269,6 +275,8 @@ class Screen:
                                      bg='white', fg="navy", relief="solid")
             you_guessed_correctly.place(x=150, y=200)
             you_guessed_correctly.after(1500, you_guessed_correctly.destroy)
+
+
             # self.clear_screen()
             round_finish_label = Label(self.root2, text="ROUND IS OVER", font=('bubble', 25))
             round_finish_label.place(x=100, y=100)
@@ -284,6 +292,8 @@ class Screen:
                                      bg='white', fg="red", relief="solid")
             you_guessed_wrongfully.place(x=150, y=200)
             you_guessed_wrongfully.after(1500, you_guessed_wrongfully.destroy)
+
+
             if self.strikes == 0:  # used all of his strikes
                 self.server_socket.send(('False;' + self.username).encode())
                 round_finish_label = Label(self.root2, text="ROUND IS OVER", font=('bubble', 25))

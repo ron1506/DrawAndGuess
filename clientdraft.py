@@ -321,7 +321,9 @@ class Surface:
         play_sign = self.sock.recv(4).decode()
         print(play_sign)
         self.root.after(0, self.root.destroy)
-        s = Screen(self.sock, self.username)
+        s1 = Screen(self.sock, self.username)
+        s2 = Screen(self.sock, self.username, score=s1.score, game_number=2)
+        s3 = Screen(self.sock, self.username, score=s2.score, game_number=3)
 
     def clear_screen(self):
         """

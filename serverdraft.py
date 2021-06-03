@@ -15,7 +15,7 @@ class Server(object):
         :param ip:
         :param port:
         """
-        self. gussed_correctly = []
+        self. guessed_correctly = []
         self.word = ""
         self.list_of_words = ['banana', 'ice cream', 'chocolate', 'apple', 'ball']  # list of items
         self.ip = ip  # the ip of the server 0.0.0.0
@@ -156,7 +156,7 @@ class Server(object):
                         #  at least one thread works
                         finish_loop_for_next_round = self.if_round_still_going(threads_lst, 0)
                     print("round ended")
-                    self.gussed_correctly = []
+                    self.guessed_correctly = []
                     # time.sleep(80)
 
     def if_round_still_going(self, thread_lst, position):
@@ -179,11 +179,10 @@ class Server(object):
 
     def handle_drawer(self, client_socket):
         finish = False
-        while not finish and len(self.gussed_correctly) != 2:
-                # if len(self.gussed_correctly) + 1 == len(self.online_players):
-                #     # print("noder")
-                #     finish = True
-                #     client_socket.send("end;".encode())
+        while not finish and len(self.guessed_correctly) != 2:
+            if len(self.guessed_correctly) + 1 == len(self.online_players):
+                finish = True
+            else:
                 try:
                     #  requesting the coordinates from the drawer.
                     request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client.
@@ -195,7 +194,8 @@ class Server(object):
                     else:
                         #  sending the coordinates to all players.
                         for i in self.online_players:
-                            i[1].send(request.encode())
+                            if len(self.guessed_correctly) + 1 != len(self.online_players):
+                                i[1].send(request.encode())
                 except ConnectionResetError:
                     #  in case the drawer is disconnecting during the game.
                     finish = True
@@ -205,8 +205,7 @@ class Server(object):
                     for j in self.online_users:
                         if j[1] == client_socket:
                             self.online_users.remove(j)
-
-        while len(self.gussed_correctly) < 2:
+        while len(self.guessed_correctly) < 2:
             print("stuck")
             continue
 
@@ -228,7 +227,7 @@ class Server(object):
         username = ""
         while not did_guess and not finish:
             print("I am in loop")
-            print(len(self.gussed_correctly))
+            print(len(self.guessed_correctly))
             try:
                 request = guesser_socket.recv(1024).decode()  # if guessed correctly or not
                 print("guesser req:" + request)
@@ -239,11 +238,11 @@ class Server(object):
                 username = lst[1]
                 if lst[0] == 'True':
                     print("i guessed")
-                    self.gussed_correctly.append(username)
-                    print(len(self.gussed_correctly))
+                    self.guessed_correctly.append(username)
+                    print(len(self.guessed_correctly))
                     # self.gussed_correctly.append(lst[1])
                     # print(self.gussed_correctly)
-                    score = (3 - len(self.gussed_correctly)) * 25
+                    score = (3 - len(self.guessed_correctly)) * 25
                     guesser_socket.send(('score;' + str(score)).encode())
                     drawer_socket.send(('score;' + str(30)).encode())
                     # guesser_socket.send("end;".encode())
@@ -267,7 +266,7 @@ class Server(object):
                     if j[1] == guesser_socket:
                         self.online_users.remove(j)
 
-        while len(self.gussed_correctly) < 2:
+        while len(self.guessed_correctly) < 2:
             continue
 
         print("daniel")
