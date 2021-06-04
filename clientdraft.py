@@ -324,6 +324,29 @@ class Surface:
         s1 = Screen(self.sock, self.username)
         s2 = Screen(self.sock, self.username, score=s1.score, game_number=2)
         s3 = Screen(self.sock, self.username, score=s2.score, game_number=3)
+        print('i finished all rounds')
+        self.sock.send((self.username + ';' + str(s3.score)).encode())
+        player1 = self.sock.recv(1024).decode()
+        player2 = self.sock.recv(1024).decode()
+        player3 = self.sock.recv(1024).decode()
+        print(player1 + "     " + player2 + "    " + player3)
+        root1 = tk.Tk()
+        print("created root")
+        root1.geometry("500x500+100+30")  # size: 943x600, Location: (100, 30)
+        root1.title("Drawing & Guessing Game- End Window")  # caption of the window
+        root1.resizable(width=tk.FALSE, height=tk.FALSE)
+        tk_rgb = "#%02x%02x%02x" % (255, 255, 255)
+        self.root["background"] = tk_rgb
+        img = tk.PhotoImage(file='draw-and-guess.png')
+        first_player = tk.Label(relief='solid', font=('bubble', 20), text=player1.split(';'), bg='orange', fg="black")
+        first_player.place(x=100, y=50)
+        first_player.photo = img
+        first_player.place(x=0, y=0)
+        second_player = tk.Label(relief='solid', font=('bubble', 20), text=player2.split(';'), bg='orange', fg="black")
+        second_player.place(x=100, y=50)
+        third_player = tk.Label(relief='solid', font=('bubble', 20), text=player3.split(';'), bg='orange', fg="black")
+        third_player.place(x=100, y=50)
+        root1.mainloop()
 
     def clear_screen(self):
         """

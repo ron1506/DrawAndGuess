@@ -134,7 +134,7 @@ class Server(object):
                     player[1].send("play".encode())
                 for i in range(len(self.online_players)):  # 80 sec
                     print("lets play" + str(i))
-                    drawer = random.choice(self.online_players)
+                    drawer = self.online_players[i]
                     #   choosing the drawer, tuple (username,socket)
                     self.word = self.choose_word()
                     threads_lst = []
@@ -157,7 +157,12 @@ class Server(object):
                         finish_loop_for_next_round = self.if_round_still_going(threads_lst, 0)
                     print("round ended")
                     self.guessed_correctly = []
-                    # time.sleep(80)
+
+        for player in self.online_players:
+            req = (player[1].recv(1024))
+            for i in self.online_players:
+                i[1].send(req)
+            # time.sleep(80)
 
     def if_round_still_going(self, thread_lst, position):
         """
@@ -180,31 +185,31 @@ class Server(object):
     def handle_drawer(self, client_socket):
         finish = False
         while not finish and len(self.guessed_correctly) != 2:
-            if len(self.guessed_correctly) + 1 == len(self.online_players):
-                finish = True
-            else:
-                try:
-                    #  requesting the coordinates from the drawer.
-                    request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client.
-                    print("req", request)
-                    lst = request.split(';')
-                    if lst[0] == 'end':
-                        print("drawer: ive got an end from the client")
-                        finish = True
-                    else:
-                        #  sending the coordinates to all players.
-                        for i in self.online_players:
-                            if len(self.guessed_correctly) + 1 != len(self.online_players):
-                                i[1].send(request.encode())
-                except ConnectionResetError:
-                    #  in case the drawer is disconnecting during the game.
+            try:
+                #  requesting the coordinates from the drawer.
+                request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client.
+                print("req", request)
+                lst = request.split(';')
+                if lst[0] == 'end':
+                    print("drawer: ive got an end from the client")
                     finish = True
+                    for i in range(2-len(self.guessed_correctly)):
+                        self.guessed_correctly.append("someone")
+                else:
+                    #  sending the coordinates to all players.
                     for i in self.online_players:
-                        if i[1] == client_socket:
-                            self.online_players.remove(i)
-                    for j in self.online_users:
-                        if j[1] == client_socket:
-                            self.online_users.remove(j)
+                        if len(self.guessed_correctly) + 1 != len(self.online_players):
+                            i[1].send(request.encode())
+            except ConnectionResetError:
+                #  in case the drawer is disconnecting during the game.
+                finish = True
+                for i in self.online_players:
+                    if i[1] == client_socket:
+                        self.online_players.remove(i)
+                for j in self.online_users:
+                    if j[1] == client_socket:
+                        self.online_users.remove(j)
+
         while len(self.guessed_correctly) < 2:
             print("stuck")
             continue
@@ -231,30 +236,26 @@ class Server(object):
             try:
                 request = guesser_socket.recv(1024).decode()  # if guessed correctly or not
                 print("guesser req:" + request)
-                # if request == "end":
-                #     self.game()
-                # number_guesses += 1
                 lst = request.split(";")
                 username = lst[1]
                 if lst[0] == 'True':
                     print("i guessed")
                     self.guessed_correctly.append(username)
-                    print(len(self.guessed_correctly))
-                    # self.gussed_correctly.append(lst[1])
-                    # print(self.gussed_correctly)
+                    print("the amount of those who guessed correctly" + str(len(self.guessed_correctly)))
                     score = (3 - len(self.guessed_correctly)) * 25
                     guesser_socket.send(('score;' + str(score)).encode())
                     drawer_socket.send(('score;' + str(30)).encode())
-                    # guesser_socket.send("end;".encode())
                     did_guess = True
-                    # else:
-                    #     if number_guesses == 3:
-                    #         self.gussed_correctly.append(lst[1])
-                    #         print(self.gussed_correctly)
                 elif lst[0] == 'end':
                     print("ive got an end from the client")
+                    for i in range(2 - len(self.guessed_correctly)):
+                        self.guessed_correctly.append("someone")
                     finish = True
                     did_guess = True
+                elif lst[0] == 'False':
+                    did_guess = True
+                    self.guessed_correctly.append(username)
+                    print("the amount of those who guessed correctly" + str(len(self.guessed_correctly)))
 
             except ConnectionResetError:
                 print("an error occurred")
@@ -271,15 +272,6 @@ class Server(object):
 
         print("daniel")
         guesser_socket.send("end;".encode())
-        # if did_guess:
-        #     self.gussed_correctly.append(username)
-            # print(self.gussed_correctly)
-            # if len(self.gussed_correctly) + 1 == how_many_players:
-            #     #  if everyone guessed.
-            #     guesser_socket.send("end".encode())
-            #     finish = False
-            # else:
-            #     guesser_socket.send("continue".encode())
 
 
 if __name__ == '__main__':

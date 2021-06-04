@@ -123,19 +123,15 @@ class Screen:
         else:
             pass
 
-    def timer(self, seconds=150):
+    def timer(self, seconds=80):
         try:
             if self.to_stop or seconds <= 0:  # if the time is up or everyone already guessed.
-                # self.server_socket.send(('end;'+self.username).encode())
                 next_round_label = Label(self.root2, text="next round starts in a bit", font=('bubble', 15))
                 next_round_label.pack(padx=50, pady=20, side=TOP)
                 if not self.to_stop:
                     self.server_socket.send('end;'.encode())
                 self.to_stop = True
                 self.root2.destroy()
-
-                # self.restart()
-                # self.timer(seconds)
             else:
                 timer_label = Label(self.root2, text=str(seconds), font=('bubble', 15), bg='white', width=5)
                 timer_label.place(x=235, y=40)
@@ -201,17 +197,9 @@ class Screen:
                     score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
                                            bg='white', fg="black", relief="solid")
                     score_headline.place(x=10, y=50)
-                elif pos[0] == 'end':
+                elif 'end' in x_and_y:
                     print("got end")
                     self.to_stop = True
-                    # self.restart()
-                    # new_thread = threading.Thread(target=lambda: self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1))
-                    # new_thread.start()
-                    # self.__init__(self.server_socket, self.username, None, self.score, self.game_number+1)
-                elif pos[0] == 'draw' or pos[0] == 'guess':
-                    print("noderet recvd mode")
-                    self.to_stop = True
-                    self.mode, self.word = x_and_y.split(";")  # who_am_i: either a 'draw' or 'guess'
                 else:
                     try:
                         if self.can_draw:
@@ -229,20 +217,7 @@ class Screen:
                         print("user disconnected")
             except:
                 print('an error ecourred')
-                # except ValueError:
-                #     if pos[-1] == 'play':
-                #         finish = True
-                #         self.to_stop = True
-
-                # print("VE", pos)
-                # if pos[0] == 'end':
-                #     if mode == 'draw':
-                #         print("i am a drawer")
-                #         # self.cv.unbind('<B1-Motion>')
-                #     # finish = True
-                # else:
-        # painting the screen in the coordinates.
-        # print("other mouse position: (%s %s)" % (x, y))
+        print("123")
 
     def check_guess(self, guess, submit_button):
         """
