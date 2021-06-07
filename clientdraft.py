@@ -27,6 +27,10 @@ class Surface:
         self.password = ""
         self.confirm_password = ""
         self.email_address = ""
+        self.player1 = ""
+        self.player2 = ""
+        self.player3 = ""
+        self.is_end = False
         try:
             # Create a TCP/IP socket
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # creating the socket
@@ -310,7 +314,14 @@ class Surface:
         thread_wait_for_instructions = threading.Thread(target=self.play_screen)
         # thread_wait_for_instructions.daemon = True
         thread_wait_for_instructions.start()
-
+        if self.is_end:
+            root1 = tk.Tk()
+            root1.geometry("500x500+100+30")  # size: 943x600, Location: (100, 30)
+            root1.title("Drawing & Guessing Game- End Window")  # caption of the window
+            root1.resizable(width=tk.FALSE, height=tk.FALSE)
+            tk_rgb = "#%02x%02x%02x" % (255, 255, 255)
+            self.root["background"] = tk_rgb
+            self.end_screen(root1)
         # self.root.mainloop()
 
     def play_screen(self):
@@ -324,29 +335,13 @@ class Surface:
         s1 = Screen(self.sock, self.username)
         s2 = Screen(self.sock, self.username, score=s1.score, game_number=2)
         s3 = Screen(self.sock, self.username, score=s2.score, game_number=3)
-        print('i finished all rounds')
         self.sock.send((self.username + ';' + str(s3.score)).encode())
-        player1 = self.sock.recv(1024).decode()
-        player2 = self.sock.recv(1024).decode()
-        player3 = self.sock.recv(1024).decode()
-        print(player1 + "     " + player2 + "    " + player3)
-        root1 = tk.Tk()
-        print("created root")
-        root1.geometry("500x500+100+30")  # size: 943x600, Location: (100, 30)
-        root1.title("Drawing & Guessing Game- End Window")  # caption of the window
-        root1.resizable(width=tk.FALSE, height=tk.FALSE)
-        tk_rgb = "#%02x%02x%02x" % (255, 255, 255)
-        self.root["background"] = tk_rgb
-        img = tk.PhotoImage(file='draw-and-guess.png')
-        first_player = tk.Label(relief='solid', font=('bubble', 20), text=player1.split(';'), bg='orange', fg="black")
-        first_player.place(x=100, y=50)
-        first_player.photo = img
-        first_player.place(x=0, y=0)
-        second_player = tk.Label(relief='solid', font=('bubble', 20), text=player2.split(';'), bg='orange', fg="black")
-        second_player.place(x=100, y=50)
-        third_player = tk.Label(relief='solid', font=('bubble', 20), text=player3.split(';'), bg='orange', fg="black")
-        third_player.place(x=100, y=50)
-        root1.mainloop()
+        self.player1 = self.sock.recv(1024).decode()
+        self.player2 = self.sock.recv(1024).decode()
+        self.player3 = self.sock.recv(1024).decode()
+        print(self.player1 + '\t\t' + self.player2 + "\t\t" + self.player3)
+        print('i finished all rounds')
+        self.is_end = True
 
     def clear_screen(self):
         """
@@ -369,6 +364,20 @@ class Surface:
         """
         encrypted_pass = hashlib.sha256(str.encode(password)).hexdigest()
         return encrypted_pass
+
+    def end_screen(self, root1):
+        print("created root")
+
+        img = tk.PhotoImage(file='draw-and-guess.png')
+        first_player = tk.Label(relief='solid', font=('bubble', 20), text=self.player1.split(';'), bg='orange', fg="black")
+        first_player.place(x=100, y=50)
+        first_player.photo = img
+        first_player.place(x=0, y=0)
+        second_player = tk.Label(relief='solid', font=('bubble', 20), text=self.player2.split(';'), bg='orange', fg="black")
+        second_player.place(x=100, y=50)
+        third_player = tk.Label(relief='solid', font=('bubble', 20), text=self.player3.split(';'), bg='orange', fg="black")
+        third_player.place(x=100, y=50)
+        root1.mainloop()
 
 
 def main():

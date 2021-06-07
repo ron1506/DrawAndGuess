@@ -15,9 +15,12 @@ class Server(object):
         :param ip:
         :param port:
         """
+        # when you want to open the words list
+        with open("./words.txt", "r") as words_file:
+            self.list_of_words = words_file.read().split("\n")
         self. guessed_correctly = []
         self.word = ""
-        self.list_of_words = ['banana', 'ice cream', 'chocolate', 'apple', 'ball']  # list of items
+        # self.list_of_words = ['banana', 'ice cream', 'chocolate', 'apple', 'ball']  # list of items
         self.ip = ip  # the ip of the server 0.0.0.0
         self.port = port  # the port of the server 1730
         self.list_all_clients = []  # creating a list with all client's info.
@@ -195,6 +198,8 @@ class Server(object):
                     finish = True
                     for i in range(2-len(self.guessed_correctly)):
                         self.guessed_correctly.append("someone")
+                elif lst[0] == 'end1':
+                    break
                 else:
                     #  sending the coordinates to all players.
                     for i in self.online_players:

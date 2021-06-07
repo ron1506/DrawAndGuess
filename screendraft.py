@@ -183,8 +183,11 @@ class Screen:
         :return:
         """
         print("paint is in process")
+        correct_guesses = 0
         while not self.to_stop:
             print("trying to recv")
+            if correct_guesses >= 2:
+                self.server_socket.send('end1;'.encode())
             try:
                 x_and_y = self.server_socket.recv(1024).decode()  # decrypting the data from the server.\
                 print(x_and_y)
@@ -194,6 +197,7 @@ class Screen:
                 if pos[0] == 'score':
                     print("score was received")
                     self.score += int(pos[1])
+                    correct_guesses += 1
                     score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
                                            bg='white', fg="black", relief="solid")
                     score_headline.place(x=10, y=50)
