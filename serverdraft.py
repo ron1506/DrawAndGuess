@@ -258,9 +258,11 @@ class Server(object):
                     finish = True
                     did_guess = True
                 elif lst[0] == 'False':
+                    drawer_socket.send(('score;0').encode())
+                    guesser_socket.send(('score;0').encode())
                     did_guess = True
                     self.guessed_correctly.append(username)
-                    print("the amount of those who guessed correctly" + str(len(self.guessed_correctly)))
+                    print("the amount of those who guessed correctly " + str(len(self.guessed_correctly)))
 
             except ConnectionResetError:
                 print("an error occurred")

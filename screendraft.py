@@ -197,6 +197,7 @@ class Screen:
                 if pos[0] == 'score':
                     print("score was received")
                     self.score += int(pos[1])
+                    print("hiii my loveeee")
                     correct_guesses += 1
                     score_headline = Label(self.root2, text='score: ' + str(self.score), font=('bubble', 15),  # the score
                                            bg='white', fg="black", relief="solid")
@@ -271,7 +272,6 @@ class Screen:
                                      bg='white', fg="red", relief="solid")
             you_guessed_wrongfully.place(x=150, y=200)
             you_guessed_wrongfully.after(1500, you_guessed_wrongfully.destroy)
-
 
             if self.strikes == 0:  # used all of his strikes
                 self.server_socket.send(('False;' + self.username).encode())
