@@ -271,28 +271,3 @@ class Screen:
 
     def change_color(self, color):
         self.color = color
-
-    # def between_rounds_screen(self):
-    #     self.cv.delete("all")
-    #     self.root2.geometry("500x500")  # size: 500x500, Location: (100, 30)
-    #     self.root2.title("Drawing & Guessing Game- Between Rounds Window")  # caption of the window
-    #     self.root2.resizable(width=FALSE, height=FALSE)
-    #     tk_rgb = "#%02x%02x%02x" % (255, 255, 255)
-    #     self.root2["background"] = tk_rgb
-    #     another_round_button = Button(self.root2, relief="solid", bg="#%02x%02x%02x" % (255, 255, 255), command=self.main())
-    #     another_round_button.place(x=200, y=200)
-
-
-
-
-
-
-
-
-
-
-"""
-def save():
-    filename = 'image.png'
-    image1.save(filename)
-"""
