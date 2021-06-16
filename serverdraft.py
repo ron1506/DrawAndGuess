@@ -161,12 +161,6 @@ class Server(object):
                     print("round ended")
                     self.guessed_correctly = []
 
-        for player in self.online_players:
-            req = (player[1].recv(1024))
-            for i in self.online_players:
-                i[1].send(req)
-            # time.sleep(80)
-
     def if_round_still_going(self, thread_lst, position):
         """
         checking if the threads atill runs.
