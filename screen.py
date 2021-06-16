@@ -5,10 +5,11 @@ import time
 
 
 class Screen:
-    def __init__(self, socket, username, mode, word, score=0):
+    def __init__(self, socket, username, mode, word, score=0, game_number=1):
         self.color = 'black'
         self.strikes = 3
         self.score = score
+        self.game_number = game_number
         self.root2 = Tk()
         self.username = username
         self.cv = Canvas(self.root2, width=500, height=500, bg='white')  # creating a blank white canvas, size: 500x500.

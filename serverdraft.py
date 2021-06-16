@@ -58,7 +58,6 @@ class Server(object):
         :param current:
         :return:
         """
-        # print("hello")
         client_handler = threading.Thread(target=self.handle_client_connection, args=(client_sock, client_address))
         # without comma you'd get a... TypeError: handle_client_connection()
         # argument after * must be a sequence, not _socketobject
@@ -75,29 +74,23 @@ class Server(object):
         finished = False
         user_name = ""
         while not finished:
-            # print(self.online_users)
             try:
                 request = str(client_socket.recv(1024).decode())
                 # getting a request from the client, either log in or registers separated by ';'.
-                # print(request)
                 lst = request.split(";")
                 if lst[0] == 'login':  # asks to log in.
-                    # print("got to login")
                     if u.to_log_in(lst[1], lst[2]) and not self.is_online(
-                            lst[1]):  # לבדוק אם משתמש קיים וסיסמה תקינה ולא מחובר
-                        # print("user should be appended")
+                            lst[1]):
                         user_name = lst[1]
                         self.online_users.append((user_name, client_socket))
                         # adds the user to the list of online clients.
                         client_socket.send("True".encode())  # sends the client that the user is connected,'true'.
                         finished = True
                     else:
-                        # print("user should not be appended")
                         # sends the client that the username\ email\ password is wrong 'false'.
                         client_socket.send("False".encode())  # sends the client that the user isn't connected,'false'.
                 elif lst[0] == 'register':  # the user asks to register.
-                    # print("got to register")
-                    if u.to_register(lst[1], lst[2], lst[3]):  # לבדוק אם משתמש ודוא"ל לא קיימים וניתן להירשם
+                    if u.to_register(lst[1], lst[2], lst[3]):
                         user_name = lst[1]
                         self.online_users.append((user_name, client_socket))
                         finished = True
@@ -136,7 +129,7 @@ class Server(object):
                 for player in self.online_players:  # sending playing authorising to all players.
                     player[1].send("play".encode())
                 for i in range(len(self.online_players)):  # 80 sec
-                    print("lets play" + str(i))
+
                     drawer = self.online_players[i]
                     #   choosing the drawer, tuple (username,socket)
                     self.word = self.choose_word()
@@ -158,7 +151,6 @@ class Server(object):
                     while finish_loop_for_next_round:
                         #  at least one thread works
                         finish_loop_for_next_round = self.if_round_still_going(threads_lst, 0)
-                    print("round ended")
                     self.guessed_correctly = []
 
     def if_round_still_going(self, thread_lst, position):
@@ -185,10 +177,8 @@ class Server(object):
             try:
                 #  requesting the coordinates from the drawer.
                 request = str(client_socket.recv(1024).decode())  # getting the coordinates from the client.
-                print("req", request)
                 lst = request.split(';')
                 if lst[0] == 'end':
-                    print("drawer: ive got an end from the client")
                     finish = True
                     for i in range(2-len(self.guessed_correctly)):
                         self.guessed_correctly.append("someone")
@@ -210,43 +200,34 @@ class Server(object):
                         self.online_users.remove(j)
 
         while len(self.guessed_correctly) < 2:
-            print("stuck")
             continue
 
-        print("daniel")
         client_socket.send("end;".encode())
 
     def handle_guesser(self, guesser_socket, drawer_socket, how_many_players):
         """
-
+        the function of the guesser.
         :param guesser_socket:
         :param drawer_socket:
         :return:
         """
-        print("handling guesser")
         finish = False
         # while not finish:
         did_guess = False
         # number_guesses = 0
         username = ""
         while not did_guess and not finish:
-            print("I am in loop")
-            print(len(self.guessed_correctly))
             try:
                 request = guesser_socket.recv(1024).decode()  # if guessed correctly or not
-                print("guesser req:" + request)
                 lst = request.split(";")
                 username = lst[1]
                 if lst[0] == 'True':
-                    print("i guessed")
                     self.guessed_correctly.append(username)
-                    print("the amount of those who guessed correctly" + str(len(self.guessed_correctly)))
                     score = (3 - len(self.guessed_correctly)) * 25
                     guesser_socket.send(('score;' + str(score)).encode())
                     drawer_socket.send(('score;' + str(30)).encode())
                     did_guess = True
                 elif lst[0] == 'end':
-                    print("ive got an end from the client")
                     for i in range(2 - len(self.guessed_correctly)):
                         self.guessed_correctly.append("someone")
                     finish = True
@@ -256,10 +237,8 @@ class Server(object):
                     guesser_socket.send(('score;0').encode())
                     did_guess = True
                     self.guessed_correctly.append(username)
-                    print("the amount of those who guessed correctly " + str(len(self.guessed_correctly)))
 
             except ConnectionResetError:
-                print("an error occurred")
                 finish = True
                 for i in self.online_players:
                     if i[1] == guesser_socket:
@@ -271,7 +250,6 @@ class Server(object):
         while len(self.guessed_correctly) < 2:
             continue
 
-        print("daniel")
         guesser_socket.send("end;".encode())
 
 

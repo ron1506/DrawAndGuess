@@ -13,7 +13,6 @@ import hashlib
 
 class Surface:
     def __init__(self, ip, port):
-
         """
         constructor. initializing variables of the class.
         building the socket, connecting to server, the main function.
@@ -191,7 +190,6 @@ class Surface:
         msg = "login;" + self.username + ";" + self.password_encryption(self.password) + ";" + str(self.sock)
         self.sock.send(msg.encode())
         is_ok = self.sock.recv(1024).decode()
-        print("thats what i get: ", is_ok)
         if is_ok == "False":  # 'true' if managed to log in and 'false' otherwise.
             messagebox.showinfo(title="Log in failed.",
                                 message="username or password are wrong, or user already connected.")
@@ -325,19 +323,10 @@ class Surface:
         :return:
         """
         play_sign = self.sock.recv(4).decode()
-        print(play_sign)
         self.root.after(0, self.root.destroy)
         s1 = Screen(self.sock, self.username)
         s2 = Screen(self.sock, self.username, score=s1.score, game_number=2)
         s3 = Screen(self.sock, self.username, score=s2.score, game_number=3)
-        # self.sock.send((self.username + ';' + str(s3.score)).encode())
-        # self.player1, self.player2, self.player3 = self.sock.recv(1024).decode().split("_")
-        # print(self.player1 + '\t\t' + self.player2 + "\t\t" + self.player3)
-        print('i finished all rounds')
-        # self.end_screen()
-        # self.end_screen()
-        # self.is_end = True
-        # print(self.is_end)
 
     def clear_screen(self):
         """
@@ -350,7 +339,6 @@ class Surface:
         lst1 = self.root.place_slaves()
         for j in lst1:
             j.destroy()
-        print("in clear screen")
 
     def password_encryption(self, password):
         """
